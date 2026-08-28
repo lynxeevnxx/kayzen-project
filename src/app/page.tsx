@@ -2461,20 +2461,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* TAB PLACEHOLDERS */}
-        {activeTab !== "beranda" && activeTab !== "program" && activeTab !== "info-lomba" && activeTab !== "tentang-kami" && activeTab !== "kemitraan" && activeTab !== "blog" && (
-          <div className="max-w-7xl mx-auto py-24 px-6 text-center space-y-6">
-            <h2 className="font-display text-3xl font-extrabold capitalize">
-              Halaman {activeTab.replace("-", " ")}
-            </h2>
-            <button
-              onClick={() => handleTabChange("beranda")}
-              className="px-6 py-2.5 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-600 transition-colors cursor-pointer"
-            >
-              Kembali ke Beranda
-            </button>
-          </div>
-        )}
         {/* ==================== TAB 4: TENTANG KAMI ==================== */}
         {activeTab === "tentang-kami" && (
           <div className="space-y-0">
