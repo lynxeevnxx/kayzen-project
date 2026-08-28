@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --background: #03040B;
+  --foreground: #F3F4F6;
+  --card-bg: #0A0D1A;
+  --border-color: #1E293B;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card-bg);
+  --color-border-custom: var(--border-color);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-outfit);
+  
+  /* Brand colors */
+  --color-brand-dark: #03040B;
+  --color-brand-card: #0A0D1A;
+  --color-brand-primary: #3B82F6;       /* Blue */
+  --color-brand-secondary: #6366F1;     /* Indigo */
+  --color-brand-purple: #8B5CF6;        /* Purple */
+  --color-brand-text: #F3F4F6;
+  --color-brand-muted: #9CA3AF;
+  --color-brand-accent-blue: #4F46E5;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter), sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, #60A5FA 0%, #8B5CF6 50%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+}
+
+.glassmorphism {
+  background: rgba(10, 13, 26, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glassmorphism-card {
+  background: rgba(10, 13, 26, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glassmorphism-card:hover {
+  background: rgba(10, 13, 26, 0.6);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+}
