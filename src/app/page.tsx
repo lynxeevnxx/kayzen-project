@@ -14,7 +14,7 @@ interface UserProfile {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<Tab>("blog"); // Defaulting to "blog" for immediate view of the new tab
+  const [activeTab, setActiveTab] = useState<Tab>("beranda");
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
