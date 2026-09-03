@@ -49,6 +49,90 @@ export default function Home() {
   const [filterPeserta, setFilterPeserta] = useState("Semua");
   const [sortOrder, setSortOrder] = useState("Terbaru");
 
+  // Hero Carousel State
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const heroSlides = [
+    {
+      badge: "BELAJAR HARI INI, BERINOVASI UNTUK ESOK",
+      title: "Tulis Ide. Riset Solusi.",
+      titleGradient: "Ciptakan Inovasi.",
+      description: "Kayzen Academia memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menghasilkan karya berkualitas yang memberi dampak nyata.",
+      image: "/hero_students.png",
+      primaryBtnText: "Jelajahi Program",
+      primaryTab: "program" as Tab,
+      secondaryBtnText: "Gabung Komunitas",
+      secondaryTab: "tentang-kami" as Tab,
+      statsBadge: "2K+",
+      statsTitle: "Ribuan Pelajar & Mahasiswa",
+      statsSub: "Telah berkembang bersama Kayzen Academia",
+      categoryTag: "Program Utama"
+    },
+    {
+      badge: "PENDAMPINGAN JUARA COMPETITION",
+      title: "Raih Tropi Juara & Beasiswa Impian",
+      titleGradient: "Bersama Mentor Expert.",
+      description: "Dapatkan bimbingan 1-on-1 pembuatan Esai, KTI, dan Proposal Bisnis dari para awardee & juara kompetisi tingkat nasional hingga internasional.",
+      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
+      primaryBtnText: "Cek Info Lomba",
+      primaryTab: "info-lomba" as Tab,
+      secondaryBtnText: "Lihat Program",
+      secondaryTab: "program" as Tab,
+      statsBadge: "98%",
+      statsTitle: "Peserta Lolos Babak Final",
+      statsSub: "Didampingi hingga tahap presentasi & awarded",
+      categoryTag: "Mentorship Lomba"
+    },
+    {
+      badge: "PUBLIKASI ILMIAH & HKI BERKELAS",
+      title: "Terbitkan Jurnal Ilmiah Sinta & Scopus",
+      titleGradient: "Standar Reputasi Global.",
+      description: "Dari draf awal hingga terbit. Kami membimbing penyusunan paper riset yang memenuhi standar akademik bereputasi nasional dan internasional.",
+      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
+      primaryBtnText: "Kemitraan & Riset",
+      primaryTab: "kemitraan" as Tab,
+      secondaryBtnText: "Baca Blog Riset",
+      secondaryTab: "blog" as Tab,
+      statsBadge: "150+",
+      statsTitle: "Karya Ilmiah Terpublikasi",
+      statsSub: "Di berbagai jurnal bereputasi tinggi",
+      categoryTag: "Jurnal & HKI"
+    },
+    {
+      badge: "BOOTCAMP & WORKSHOP INTERAKTIF",
+      title: "Asah Skill Written & Critical Thinking",
+      titleGradient: "Secara Fleksibel.",
+      description: "Akses materi eksklusif, template penulisan profesional, dan sesi bedah karya interaktif bersama praktisi akademisi terkemuka.",
+      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+      primaryBtnText: "Pelajari Program",
+      primaryTab: "program" as Tab,
+      secondaryBtnText: "Tentang Kami",
+      secondaryTab: "tentang-kami" as Tab,
+      statsBadge: "50+",
+      statsTitle: "Bootcamp & Webinar Active",
+      statsSub: "Tersedia secara berkala setiap bulan",
+      categoryTag: "Skill Development"
+    }
+  ];
+
+  useEffect(() => {
+    if (isHeroPaused) return;
+    const interval = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isHeroPaused, heroSlides.length]);
+
+  const handleNextSlide = () => {
+    setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
+
   // Navigation handlers
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -434,68 +518,208 @@ export default function Home() {
 
 {activeTab === "beranda" && (
           <div className="space-y-24 pb-24">
-            {/* HERO SECTION */}
-            <section className="relative pt-12 md:pt-20 px-6 lg:px-16 overflow-hidden">
+            {/* HERO CAROUSEL SECTION */}
+            <section 
+              className="relative pt-6 md:pt-12 px-6 lg:px-16 overflow-hidden"
+              onMouseEnter={() => setIsHeroPaused(true)}
+              onMouseLeave={() => setIsHeroPaused(false)}
+              onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+              onTouchEnd={(e) => {
+                if (touchStartX !== null) {
+                  const touchEndX = e.changedTouches[0].clientX;
+                  const diff = touchStartX - touchEndX;
+                  if (diff > 50) handleNextSlide();
+                  else if (diff < -50) handlePrevSlide();
+                  setTouchStartX(null);
+                }
+              }}
+            >
               <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
               <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
 
-              <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                {/* Text Content */}
-                <div className="lg:col-span-7 space-y-6 text-left">
-                  <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-primary/15 text-brand-primary border border-brand-primary/30 tracking-wider">
-                    BELAJAR HARI INI, BERINOVASI UNTUK ESOK
-                  </span>
+              <div className="max-w-7xl mx-auto relative">
+                {/* Carousel Card Container */}
+                <div className={`relative rounded-3xl p-6 sm:p-10 border transition-all duration-500 overflow-hidden ${
+                  isDarkMode 
+                    ? "bg-[#090d18]/80 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/80" 
+                    : "bg-white/90 backdrop-blur-xl border-gray-100 shadow-xl shadow-gray-200/50"
+                }`}>
                   
-                  <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                    Tulis Ide.<br />
-                    Riset Solusi.<br />
-                    <span className="text-gradient">Ciptakan Inovasi.</span>
-                  </h1>
+                  {/* Dynamic Slide Content */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[420px]">
+                    
+                    {/* Text Content */}
+                    <div className="lg:col-span-7 space-y-6 text-left transition-all duration-500 ease-in-out">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/30 tracking-wider uppercase">
+                          {heroSlides[currentHeroSlide].badge}
+                        </span>
+                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${
+                          isDarkMode ? "bg-white/5 border-white/10 text-gray-300" : "bg-gray-100 border-gray-200 text-gray-600"
+                        }`}>
+                          Slide {currentHeroSlide + 1} / {heroSlides.length}
+                        </span>
+                      </div>
+                      
+                      <h1 className={`font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                        {heroSlides[currentHeroSlide].title}<br />
+                        <span className="text-gradient">
+                          {heroSlides[currentHeroSlide].titleGradient}
+                        </span>
+                      </h1>
 
-                  <p className={`text-base sm:text-lg max-w-xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                    Kayzen Academia memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menghasilkan karya berkualitas yang memberi dampak nyata.
-                  </p>
+                      <p className={`text-sm sm:text-base max-w-xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
+                        {heroSlides[currentHeroSlide].description}
+                      </p>
 
-                  {/* Trust indicator */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
-                    <div className="flex -space-x-3">
-                      {[
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                      ].map((src, i) => (
-                        <div key={i} className={`relative w-10 h-10 rounded-full border-2 overflow-hidden ${isDarkMode ? "border-brand-dark" : "border-white"}`}>
-                          <Image src={src} alt="Student avatar" fill className="object-cover" />
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-4 pt-2">
+                        <button
+                          onClick={() => handleTabChange(heroSlides[currentHeroSlide].primaryTab)}
+                          className="px-6 py-3 text-xs sm:text-sm font-bold text-white bg-gradient-brand rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all cursor-pointer flex items-center gap-2"
+                        >
+                          <span>{heroSlides[currentHeroSlide].primaryBtnText}</span>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </button>
+
+                        <button
+                          onClick={() => handleTabChange(heroSlides[currentHeroSlide].secondaryTab)}
+                          className={`px-6 py-3 text-xs sm:text-sm font-bold rounded-xl border transition-all cursor-pointer ${
+                            isDarkMode
+                              ? "text-white border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25"
+                              : "text-gray-700 border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400"
+                          }`}
+                        >
+                          {heroSlides[currentHeroSlide].secondaryBtnText}
+                        </button>
+                      </div>
+
+                      {/* Trust indicator / Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                        <div className="flex -space-x-3">
+                          {[
+                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+                          ].map((src, i) => (
+                            <div key={i} className={`relative w-8 h-8 rounded-full border-2 overflow-hidden ${isDarkMode ? "border-brand-dark" : "border-white"}`}>
+                              <Image src={src} alt="Student avatar" fill className="object-cover" />
+                            </div>
+                          ))}
+                          <div className="w-8 h-8 rounded-full border-2 border-brand-dark bg-gradient-purple flex items-center justify-center text-[10px] font-bold text-white">
+                            {heroSlides[currentHeroSlide].statsBadge}
+                          </div>
                         </div>
-                      ))}
-                      <div className="w-10 h-10 rounded-full border-2 border-brand-dark bg-gradient-purple flex items-center justify-center text-xs font-bold text-white">
-                        2K+
+                        <div>
+                          <p className={`text-xs font-bold ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                            {heroSlides[currentHeroSlide].statsTitle}
+                          </p>
+                          <p className={`text-[11px] ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            {heroSlides[currentHeroSlide].statsSub}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <p className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                        Ribuan pelajar dan mahasiswa
-                      </p>
-                      <p className={`text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`}>
-                        telah berkembang bersama Kayzen Academia.
-                      </p>
+
+                    {/* Graphic / Slide Image */}
+                    <div className="lg:col-span-5 relative w-full aspect-[4/3] sm:aspect-square sm:max-w-md lg:max-w-none mx-auto">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/30 to-brand-purple/30 rounded-3xl blur-2xl opacity-60" />
+                      <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl transition-all duration-700 ${
+                        isDarkMode ? "border-white/15 shadow-black/70 bg-brand-card" : "border-gray-200 shadow-gray-300 bg-white"
+                      }`}>
+                        <Image
+                          key={heroSlides[currentHeroSlide].image}
+                          src={heroSlides[currentHeroSlide].image}
+                          alt={heroSlides[currentHeroSlide].title}
+                          fill
+                          priority
+                          className="object-cover transition-transform duration-700 hover:scale-105"
+                        />
+                        {/* Overlay Badge */}
+                        <div className="absolute bottom-4 left-4 right-4 p-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-between text-white">
+                          <span className="text-xs font-bold tracking-wide">
+                            ✨ {heroSlides[currentHeroSlide].categoryTag}
+                          </span>
+                          <span className="text-[10px] text-brand-primary bg-brand-primary/20 px-2 py-0.5 rounded font-semibold">
+                            Kayzen Verified
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Image Graphic */}
-                <div className="lg:col-span-5 relative w-full aspect-square sm:max-w-md lg:max-w-none mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/20 to-brand-purple/20 rounded-3xl blur-2xl opacity-50" />
-                  <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${isDarkMode ? "border-white/10 shadow-black/60 bg-brand-card" : "border-gray-200/60 shadow-gray-200 bg-white"}`}>
-                    <Image
-                      src="/hero_students.png"
-                      alt="Kayzen Academia Students holding trophy"
-                      fill
-                      priority
-                      className="object-cover"
-                    />
+                  {/* Navigation Controls & Indicators Bar */}
+                  <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    
+                    {/* Slide Pill Tabs */}
+                    <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
+                      {heroSlides.map((slide, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentHeroSlide(idx)}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
+                            currentHeroSlide === idx
+                              ? "bg-gradient-brand text-white shadow-md shadow-brand-primary/20 scale-105"
+                              : isDarkMode
+                              ? "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+                          }`}
+                        >
+                          <span>0{idx + 1}.</span>
+                          <span>{slide.categoryTag}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Arrow Navigation & Auto Play Indicator */}
+                    <div className="flex items-center gap-3">
+                      <span className={`text-[11px] ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                        {isHeroPaused ? "Paused" : "Auto Play"}
+                      </span>
+                      
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={handlePrevSlide}
+                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                            isDarkMode
+                              ? "bg-white/5 border-white/10 text-white hover:bg-white/15"
+                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
+                          }`}
+                          title="Slide Sebelumnya"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+
+                        <button
+                          onClick={handleNextSlide}
+                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                            isDarkMode
+                              ? "bg-white/5 border-white/10 text-white hover:bg-white/15"
+                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
+                          }`}
+                          title="Slide Selanjutnya"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Progress Bar Line */}
+                  {!isHeroPaused && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
+                      <div 
+                        key={currentHeroSlide}
+                        className="h-full bg-gradient-brand animate-hero-progress" 
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
