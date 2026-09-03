@@ -10,7 +10,7 @@ const handler = NextAuth({
   ],
   secret: process.env.NEXTAUTH_SECRET || "some-default-secret-key-12345678",
   callbacks: {
-    async session({ session, token }) {
+    async session({ session }) {
       return session;
     },
   },

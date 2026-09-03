@@ -20,15 +20,18 @@ export default function Home() {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("kayzen_user");
-      if (savedUser) {
-        const parsed = JSON.parse(savedUser) as UserProfile;
-        setCurrentUser(parsed);
+    const timer = setTimeout(() => {
+      try {
+        const savedUser = localStorage.getItem("kayzen_user");
+        if (savedUser) {
+          const parsed = JSON.parse(savedUser) as UserProfile;
+          setCurrentUser(parsed);
+        }
+      } catch (e) {
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLogout = () => {
