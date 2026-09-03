@@ -93,7 +93,7 @@ export default function MasukPage() {
           {/* Testimonial Quote */}
           <div className="p-6 rounded-2xl glassmorphism border border-white/10 relative shadow-xl">
             <p className="text-xs text-white/90 leading-relaxed italic">
-              "Kayzen Academia membantu saya merancang proposal riset hingga memenangkan hibah penelitian nasional. Pendampingan mentor benar-benar terarah."
+              &quot;Kayzen Academia membantu saya merancang proposal riset hingga memenangkan hibah penelitian nasional. Pendampingan mentor benar-benar terarah.&quot;
             </p>
             <div className="text-[10px] text-brand-primary font-bold mt-4">
               — Muhammad F., Mahasiswa Riset & Inovasi

@@ -93,7 +93,7 @@ export default function DaftarPage() {
           {/* Testimonial Quote */}
           <div className="p-6 rounded-2xl glassmorphism border border-white/10 relative shadow-xl">
             <p className="text-xs text-white/90 leading-relaxed italic">
-              "Kunci utama riset adalah proses terstruktur. Kurikulum di Kayzen Academia mengajarkan saya cara riset yang diakui secara global."
+              &quot;Kunci utama riset adalah proses terstruktur. Kurikulum di Kayzen Academia mengajarkan saya cara riset yang diakui secara global.&quot;
             </p>
             <div className="text-[10px] text-brand-primary font-bold mt-4">
               — Dinda S., Awardee LPDP & Peneliti

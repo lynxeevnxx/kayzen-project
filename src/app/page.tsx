@@ -6,16 +6,28 @@ import Image from "next/image";
 
 type Tab = "beranda" | "program" | "kemitraan" | "info-lomba" | "blog" | "tentang-kami";
 
+interface UserProfile {
+  name?: string;
+  email?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("blog"); // Defaulting to "blog" for immediate view of the new tab
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("kayzen_user");
-    if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
+    try {
+      const savedUser = localStorage.getItem("kayzen_user");
+      if (savedUser) {
+        const parsed = JSON.parse(savedUser) as UserProfile;
+        setCurrentUser(parsed);
+      }
+    } catch (e) {
+      console.error(e);
     }
   }, []);
 
