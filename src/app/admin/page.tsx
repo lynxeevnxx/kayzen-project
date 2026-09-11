@@ -45,7 +45,7 @@ export default function AdminPage() {
     id: "",
     title: "",
     category: "Bootcamp & Mentoring",
-    price: "Rp 150.000",
+    price: "Rp 39.000",
     mentor: "Tim Mentor Kayzen",
     image: "",
     description: "",
