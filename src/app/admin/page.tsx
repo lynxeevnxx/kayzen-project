@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [contestForm, setContestForm] = useState({
     id: "",
     title: "",
-    category: "Teknologi & AI",
+    category: "Karya Tulis Ilmiah",
     level: "Nasional",
     deadline: "30 Hari",
     fee: "Gratis",
