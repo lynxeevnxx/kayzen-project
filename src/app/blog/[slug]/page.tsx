@@ -19,7 +19,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
       if (savedTheme !== null) {
         setIsDarkMode(savedTheme === "dark");
       } else {
-        setIsDarkMode(true);
+        setIsDarkMode(false);
       }
     } catch (e) {
       console.error(e);
