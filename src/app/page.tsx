@@ -557,56 +557,6 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                     Kayzen Academia memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menghasilkan karya berkualitas yang memberi dampak nyata.
                   </p>
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center gap-4 pt-2">
-                    <button
-                      onClick={() => handleTabChange("program")}
-                      className="px-6 py-3.5 text-xs sm:text-sm font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
-                    >
-                      <span>Jelajahi Program</span>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </button>
-
-                    <Link
-                      href="/daftar"
-                      className={`px-6 py-3.5 text-xs sm:text-sm font-bold rounded-xl border transition-all cursor-pointer ${
-                        isDarkMode
-                          ? "text-white border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20"
-                          : "text-gray-700 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300"
-                      }`}
-                    >
-                      Gabung Komunitas
-                    </Link>
-                  </div>
-
-                  {/* Trust indicator */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
-                    <div className="flex -space-x-3">
-                      {[
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
-                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                      ].map((src, i) => (
-                        <div key={i} className={`relative w-10 h-10 rounded-full border-2 overflow-hidden ${isDarkMode ? "border-brand-dark" : "border-white"}`}>
-                          <Image src={src} alt="Student avatar" fill className="object-cover" />
-                        </div>
-                      ))}
-                      <div className="w-10 h-10 rounded-full border-2 border-brand-dark bg-gradient-purple flex items-center justify-center text-xs font-bold text-white">
-                        2K+
-                      </div>
-                    </div>
-                    <div>
-                      <p className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                        Ribuan pelajar dan mahasiswa
-                      </p>
-                      <p className={`text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`}>
-                        telah berkembang bersama Kayzen Academia.
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Right Side: Smooth Image-Only Carousel */}
