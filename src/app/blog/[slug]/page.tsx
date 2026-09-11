@@ -384,31 +384,6 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
               <span className={isDarkMode ? "text-brand-muted" : "text-gray-500"}>
                 📅 {new Date(displayBlog.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </span>
-
-              {/* QUICK SHARE ACTIONS */}
-              <div className="flex items-center gap-2 border-l pl-4 border-gray-200/20">
-                <button
-                  onClick={handleCopyLink}
-                  title="Salin Tautan"
-                  className={`p-2 rounded-lg border transition-all cursor-pointer text-xs ${
-                    copied
-                      ? "bg-emerald-500 text-white border-emerald-500"
-                      : isDarkMode
-                        ? "bg-white/5 border-white/10 hover:bg-white/10 text-white"
-                        : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {copied ? "✓ Tersalin!" : "🔗 Salin Tautan"}
-                </button>
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`${displayBlog.title} - Read more on Kayzen: ${typeof window !== "undefined" ? window.location.href : ""}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all text-xs font-bold"
-                >
-                  WhatsApp
-                </a>
-              </div>
             </div>
           </div>
         </header>
