@@ -13,6 +13,24 @@ export async function GET() {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    await initTables();
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id || !status) {
+      return NextResponse.json({ message: 'ID dan Status wajib diisi' }, { status: 400 });
+    }
+
+    await query('UPDATE contest_registrations SET status = ? WHERE id = ?', [status, id]);
+    return NextResponse.json({ success: true, message: 'Status pendaftaran berhasil diperbarui' });
+  } catch (error: any) {
+    console.error('PUT Admin Registration Error:', error);
+    return NextResponse.json({ message: 'Gagal memperbarui status pendaftaran' }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     await initTables();
