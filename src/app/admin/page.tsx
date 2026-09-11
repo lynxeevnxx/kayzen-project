@@ -25,74 +25,6 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
 
-  // Modal States
-  const [modalType, setModalType] = useState<"lomba" | "program" | "blog" | "testimonial" | "team" | "partner" | null>(null);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
-
-  // Form States
-  const [contestForm, setContestForm] = useState({
-    id: "",
-    title: "",
-    category: "Karya Tulis Ilmiah",
-    level: "Nasional",
-    deadline: "30 Hari",
-    fee: "Gratis",
-    image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-    description: "",
-    guide_url: "#",
-    status: "open",
-  });
-
-  const [programForm, setProgramForm] = useState({
-    id: "",
-    title: "",
-    category: "Bootcamp & Mentoring",
-    price: "Rp 39.000",
-    mentor: "Tim Mentor Kayzen",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
-    description: "",
-    link: "https://wa.me/6281234567890",
-    status: "active",
-  });
-
-  const [blogForm, setBlogForm] = useState({
-    id: "",
-    title: "",
-    category: "Teknologi & AI",
-    author: "Tim Kayzen Academia",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
-    excerpt: "",
-    content: "",
-    status: "published",
-  });
-
-  const [testimonialForm, setTestimonialForm] = useState({
-    id: "",
-    quote: "",
-    author: "",
-    title: "Juara 1 LKTI Nasional",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-    rating: 5,
-    status: "active",
-  });
-
-  const [teamForm, setTeamForm] = useState({
-    id: "",
-    name: "",
-    role: "Head of Mentorship",
-    description: "",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-    status: "active",
-  });
-
-  const [partnerForm, setPartnerForm] = useState({
-    id: "",
-    name: "",
-    category: "Universitas",
-    logo: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=300&q=80",
-    status: "active",
-  });
-
   // Load All Data from APIs
   const fetchAllData = async () => {
     setLoading(true);
@@ -139,29 +71,7 @@ export default function AdminPage() {
     setTimeout(() => setSuccessMsg(""), 4000);
   };
 
-  // Submit Handlers
-  const handleSaveContest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/contests", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...contestForm, id: editingItem.id } : contestForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan lomba");
-    }
-  };
-
+  // Delete Handlers
   const handleDeleteContest = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus lomba ini?")) return;
     try {
@@ -171,28 +81,6 @@ export default function AdminPage() {
       fetchAllData();
     } catch (err: any) {
       alert("Gagal menghapus lomba");
-    }
-  };
-
-  const handleSaveProgram = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/programs", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...programForm, id: editingItem.id } : programForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan program");
     }
   };
 
@@ -208,28 +96,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleSaveBlog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/blogs", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...blogForm, id: editingItem.id } : blogForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan artikel blog");
-    }
-  };
-
   const handleDeleteBlog = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus artikel blog ini?")) return;
     try {
@@ -239,28 +105,6 @@ export default function AdminPage() {
       fetchAllData();
     } catch (err: any) {
       alert("Gagal menghapus artikel blog");
-    }
-  };
-
-  const handleSaveTestimonial = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/testimonials", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...testimonialForm, id: editingItem.id } : testimonialForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan testimoni");
     }
   };
 
@@ -276,28 +120,6 @@ export default function AdminPage() {
     }
   };
 
-  const handleSaveTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/team", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...teamForm, id: editingItem.id } : teamForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan anggota tim");
-    }
-  };
-
   const handleDeleteTeam = async (id: string) => {
     if (!confirm("Apakah Anda yakin ingin menghapus anggota tim ini?")) return;
     try {
@@ -307,28 +129,6 @@ export default function AdminPage() {
       fetchAllData();
     } catch (err: any) {
       alert("Gagal menghapus anggota tim");
-    }
-  };
-
-  const handleSavePartner = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const method = editingItem ? "PUT" : "POST";
-      const res = await fetch("/api/admin/partners", {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingItem ? { ...partnerForm, id: editingItem.id } : partnerForm),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      showNotification(data.message);
-      setModalType(null);
-      setEditingItem(null);
-      fetchAllData();
-    } catch (err: any) {
-      alert(err.message || "Gagal menyimpan partner");
     }
   };
 
@@ -397,87 +197,6 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
-  // Modal Opener Helper
-  const openAddModal = (type: "lomba" | "program" | "blog" | "testimonial" | "team" | "partner") => {
-    setEditingItem(null);
-    setModalType(type);
-    if (type === "lomba") {
-      setContestForm({
-        id: "",
-        title: "",
-        category: "Karya Tulis Ilmiah",
-        level: "Nasional",
-        deadline: "30 Hari",
-        fee: "Gratis",
-        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
-        description: "",
-        guide_url: "#",
-        status: "open",
-      });
-    } else if (type === "program") {
-      setProgramForm({
-        id: "",
-        title: "",
-        category: "Bootcamp & Mentoring",
-        price: "Rp 39.000",
-        mentor: "Tim Mentor Kayzen",
-        image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80",
-        description: "",
-        link: "https://wa.me/6281234567890",
-        status: "active",
-      });
-    } else if (type === "blog") {
-      setBlogForm({
-        id: "",
-        title: "",
-        category: "Teknologi & AI",
-        author: "Tim Kayzen Academia",
-        image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
-        excerpt: "",
-        content: "",
-        status: "published",
-      });
-    } else if (type === "testimonial") {
-      setTestimonialForm({
-        id: "",
-        quote: "",
-        author: "",
-        title: "Juara 1 LKTI Nasional",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-        rating: 5,
-        status: "active",
-      });
-    } else if (type === "team") {
-      setTeamForm({
-        id: "",
-        name: "",
-        role: "Head of Mentorship",
-        description: "",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-        status: "active",
-      });
-    } else if (type === "partner") {
-      setPartnerForm({
-        id: "",
-        name: "",
-        category: "Universitas",
-        logo: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=300&q=80",
-        status: "active",
-      });
-    }
-  };
-
-  const openEditModal = (type: "lomba" | "program" | "blog" | "testimonial" | "team" | "partner", item: any) => {
-    setEditingItem(item);
-    setModalType(type);
-    if (type === "lomba") setContestForm(item);
-    else if (type === "program") setProgramForm(item);
-    else if (type === "blog") setBlogForm(item);
-    else if (type === "testimonial") setTestimonialForm(item);
-    else if (type === "team") setTeamForm(item);
-    else if (type === "partner") setPartnerForm(item);
-  };
-
   // Nav Items Definition
   const navItems = [
     { id: "dashboard", label: "Dashboard Overview", icon: "📊", badge: null },
@@ -511,7 +230,7 @@ export default function AdminPage() {
               <span className="px-3 py-1 bg-brand-purple/20 text-brand-purple text-xs font-bold rounded-full border border-brand-purple/30">
                 Kayzen CMS v2.0
               </span>
-              <span className="text-xs text-gray-400">Pusat Manajemen Client & Konten</span>
+              <span className="text-xs text-gray-400">Pusat Manajemen Client & Konten (Halaman Editor)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
               Admin Control Panel
@@ -652,40 +371,43 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* QUICK ACTIONS */}
+                    {/* QUICK ACTIONS WITH DEDICATED PAGE LINKS */}
                     <div className={`p-6 rounded-2xl border ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
                       <h3 className="text-sm font-extrabold uppercase tracking-wider mb-4 text-gray-400">
-                        ⚡ Quick Action Management
+                        ⚡ Quick Action (Akses Halaman Editor Baru)
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <button
-                          onClick={() => openAddModal("program")}
-                          className="p-4 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 font-bold text-xs flex flex-col items-center gap-2 cursor-pointer transition-all"
+                        <Link
+                          href="/admin/program/editor"
+                          className="p-4 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
                         >
                           <span className="text-2xl">🎓</span>
-                          <span>+ Tambah Program</span>
-                        </button>
-                        <button
-                          onClick={() => openAddModal("lomba")}
-                          className="p-4 rounded-xl bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 text-amber-400 font-bold text-xs flex flex-col items-center gap-2 cursor-pointer transition-all"
+                          <span>+ Tambah Program (Halaman Baru)</span>
+                        </Link>
+
+                        <Link
+                          href="/admin/lomba/editor"
+                          className="p-4 rounded-xl bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 text-amber-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
                         >
                           <span className="text-2xl">🏆</span>
-                          <span>+ Tambah Lomba</span>
-                        </button>
+                          <span>+ Tambah Lomba (Halaman Baru)</span>
+                        </Link>
+
                         <Link
                           href="/admin/blog/editor"
-                          className="p-4 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex flex-col items-center gap-2 cursor-pointer transition-all text-center"
+                          className="p-4 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
                         >
                           <span className="text-2xl">✍️</span>
-                          <span>+ Tulis Blog Editor</span>
+                          <span>+ Tulis Blog (Halaman Baru)</span>
                         </Link>
-                        <button
-                          onClick={() => setActiveTab("registrations")}
-                          className="p-4 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs flex flex-col items-center gap-2 cursor-pointer transition-all"
+
+                        <Link
+                          href="/admin/testimonial/editor"
+                          className="p-4 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
                         >
-                          <span className="text-2xl">👥</span>
-                          <span>Kelola Peserta</span>
-                        </button>
+                          <span className="text-2xl">💬</span>
+                          <span>+ Testimonial (Halaman Baru)</span>
+                        </Link>
                       </div>
                     </div>
 
@@ -892,23 +614,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Program & Bootcamp</h2>
-                        <p className="text-xs text-gray-400">Kelola katalog bootcamp dan paket mentoring</p>
+                        <p className="text-xs text-gray-400">Kelola katalog bootcamp dan paket mentoring di Halaman Baru</p>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href="/admin/program/editor"
-                          className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2"
-                        >
-                          <span>✏️</span> Editor Halaman Program
-                        </Link>
-                        <button
-                          onClick={() => openAddModal("program")}
-                          className="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
-                        >
-                          + Tambah Program
-                        </button>
-                      </div>
+                      <Link
+                        href="/admin/program/editor"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                      >
+                        <span>+</span> Tambah Program (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -939,12 +653,12 @@ export default function AdminPage() {
                               {item.status || 'active'}
                             </span>
                             <div className="flex gap-2">
-                              <button
-                                onClick={() => openEditModal("program", item)}
-                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer"
+                              <Link
+                                href={`/admin/program/editor?id=${item.id}`}
+                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit
-                              </button>
+                                Edit (Halaman Baru)
+                              </Link>
                               <button
                                 onClick={() => handleDeleteProgram(item.id)}
                                 className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold cursor-pointer"
@@ -965,23 +679,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Info Lomba & Beasiswa</h2>
-                        <p className="text-xs text-gray-400">Kelola info lomba karya tulis, teknologi, dan sains</p>
+                        <p className="text-xs text-gray-400">Kelola info lomba karya tulis, teknologi, dan sains di Halaman Baru</p>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href="/admin/lomba/editor"
-                          className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2"
-                        >
-                          <span>✏️</span> Editor Halaman Lomba
-                        </Link>
-                        <button
-                          onClick={() => openAddModal("lomba")}
-                          className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
-                        >
-                          + Tambah Lomba
-                        </button>
-                      </div>
+                      <Link
+                        href="/admin/lomba/editor"
+                        className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                      >
+                        <span>+</span> Tambah Lomba (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1013,12 +719,12 @@ export default function AdminPage() {
                           <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
                             <span className="text-[11px] text-gray-400">Status: {item.status}</span>
                             <div className="flex gap-2">
-                              <button
-                                onClick={() => openEditModal("lomba", item)}
-                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer"
+                              <Link
+                                href={`/admin/lomba/editor?id=${item.id}`}
+                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit
-                              </button>
+                                Edit (Halaman Baru)
+                              </Link>
                               <button
                                 onClick={() => handleDeleteContest(item.id)}
                                 className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold cursor-pointer"
@@ -1039,23 +745,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Blog & Artikel</h2>
-                        <p className="text-xs text-gray-400">Publikasi artikel riset, tips lomba, dan panduan akademis</p>
+                        <p className="text-xs text-gray-400">Publikasi artikel riset, tips lomba, dan panduan akademis di Halaman Baru</p>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <Link
-                          href="/admin/blog/editor"
-                          className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2"
-                        >
-                          <span>✍️</span> Tulis di Full Editor
-                        </Link>
-                        <button
-                          onClick={() => openAddModal("blog")}
-                          className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
-                        >
-                          + Quick Add Artikel
-                        </button>
-                      </div>
+                      <Link
+                        href="/admin/blog/editor"
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                      >
+                        <span>✍️</span> Tulis Blog (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1085,7 +783,7 @@ export default function AdminPage() {
                                 href={`/admin/blog/editor?id=${item.id}`}
                                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit
+                                Edit (Halaman Baru)
                               </Link>
                               <button
                                 onClick={() => handleDeleteBlog(item.id)}
@@ -1107,15 +805,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Testimonial Mahasiswa</h2>
-                        <p className="text-xs text-gray-400">Kelola ulasan dan pencapaian alumni mentoring</p>
+                        <p className="text-xs text-gray-400">Kelola ulasan dan pencapaian alumni mentoring di Halaman Baru</p>
                       </div>
 
-                      <button
-                        onClick={() => openAddModal("testimonial")}
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
+                      <Link
+                        href="/admin/testimonial/editor"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
                       >
-                        + Tambah Testimoni
-                      </button>
+                        <span>+</span> Tambah Testimonial (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1143,12 +841,12 @@ export default function AdminPage() {
                           <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
                             <span className="text-[11px] text-gray-400">Status: {item.status}</span>
                             <div className="flex gap-2">
-                              <button
-                                onClick={() => openEditModal("testimonial", item)}
-                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer"
+                              <Link
+                                href={`/admin/testimonial/editor?id=${item.id}`}
+                                className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit
-                              </button>
+                                Edit (Halaman Baru)
+                              </Link>
                               <button
                                 onClick={() => handleDeleteTestimonial(item.id)}
                                 className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold cursor-pointer"
@@ -1169,15 +867,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Tim & Mentor</h2>
-                        <p className="text-xs text-gray-400">Kelola profil mentor dan instruktur Kayzen</p>
+                        <p className="text-xs text-gray-400">Kelola profil mentor dan instruktur Kayzen di Halaman Baru</p>
                       </div>
 
-                      <button
-                        onClick={() => openAddModal("team")}
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
+                      <Link
+                        href="/admin/team/editor"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
                       >
-                        + Tambah Mentor
-                      </button>
+                        <span>+</span> Tambah Mentor (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -1198,12 +896,12 @@ export default function AdminPage() {
                           </div>
 
                           <div className="mt-4 pt-4 border-t border-white/10 flex justify-center gap-2">
-                            <button
-                              onClick={() => openEditModal("team", item)}
-                              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer"
+                            <Link
+                              href={`/admin/team/editor?id=${item.id}`}
+                              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                             >
-                              Edit
-                            </button>
+                              Edit (Halaman Baru)
+                            </Link>
                             <button
                               onClick={() => handleDeleteTeam(item.id)}
                               className="px-3 py-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold cursor-pointer"
@@ -1223,15 +921,15 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Kemitraan & Partner</h2>
-                        <p className="text-xs text-gray-400">Kelola logo instansi, universitas, dan jaringan mitra</p>
+                        <p className="text-xs text-gray-400">Kelola logo instansi, universitas, dan mitra di Halaman Baru</p>
                       </div>
 
-                      <button
-                        onClick={() => openAddModal("partner")}
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg cursor-pointer transition-all"
+                      <Link
+                        href="/admin/partner/editor"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
                       >
-                        + Tambah Partner
-                      </button>
+                        <span>+</span> Tambah Partner (Halaman Baru)
+                      </Link>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -1251,12 +949,12 @@ export default function AdminPage() {
                           </div>
 
                           <div className="mt-3 pt-2 border-t border-white/10 flex justify-center gap-2">
-                            <button
-                              onClick={() => openEditModal("partner", item)}
-                              className="px-2.5 py-1 rounded bg-white/10 text-[10px] font-bold cursor-pointer"
+                            <Link
+                              href={`/admin/partner/editor?id=${item.id}`}
+                              className="px-2.5 py-1 rounded bg-white/10 text-[10px] font-bold"
                             >
-                              Edit
-                            </button>
+                              Edit (Halaman Baru)
+                            </Link>
                             <button
                               onClick={() => handleDeletePartner(item.id)}
                               className="px-2.5 py-1 rounded bg-red-500/20 text-red-400 text-[10px] font-bold cursor-pointer"
@@ -1274,510 +972,6 @@ export default function AdminPage() {
           </main>
         </div>
       </div>
-
-      {/* ----------------- MODAL FOR QUICK ADD / EDIT ----------------- */}
-      {modalType && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-          <div
-            className={`w-full max-w-xl p-6 rounded-3xl border shadow-2xl transition-all ${
-              isDarkMode ? "bg-[#0b0f19] border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold">
-                {editingItem ? "Edit" : "Tambah"} {modalType.toUpperCase()}
-              </h3>
-              <button
-                onClick={() => setModalType(null)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-sm font-bold cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* LOMBA FORM */}
-            {modalType === "lomba" && (
-              <form onSubmit={handleSaveContest} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Judul Lomba</label>
-                  <input
-                    type="text"
-                    required
-                    value={contestForm.title}
-                    onChange={(e) => setContestForm({ ...contestForm, title: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Kategori</label>
-                    <input
-                      type="text"
-                      value={contestForm.category}
-                      onChange={(e) => setContestForm({ ...contestForm, category: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Tingkat</label>
-                    <input
-                      type="text"
-                      value={contestForm.level}
-                      onChange={(e) => setContestForm({ ...contestForm, level: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Deadline</label>
-                    <input
-                      type="text"
-                      value={contestForm.deadline}
-                      onChange={(e) => setContestForm({ ...contestForm, deadline: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Biaya</label>
-                    <input
-                      type="text"
-                      value={contestForm.fee}
-                      onChange={(e) => setContestForm({ ...contestForm, fee: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Gambar Banner</label>
-                  <input
-                    type="text"
-                    required
-                    value={contestForm.image}
-                    onChange={(e) => setContestForm({ ...contestForm, image: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Deskripsi Ringkas</label>
-                  <textarea
-                    rows={3}
-                    value={contestForm.description}
-                    onChange={(e) => setContestForm({ ...contestForm, description: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-brand-purple text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Lomba
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* PROGRAM FORM */}
-            {modalType === "program" && (
-              <form onSubmit={handleSaveProgram} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Judul Program / Bootcamp</label>
-                  <input
-                    type="text"
-                    required
-                    value={programForm.title}
-                    onChange={(e) => setProgramForm({ ...programForm, title: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Kategori</label>
-                    <input
-                      type="text"
-                      value={programForm.category}
-                      onChange={(e) => setProgramForm({ ...programForm, category: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Harga Program</label>
-                    <input
-                      type="text"
-                      value={programForm.price}
-                      onChange={(e) => setProgramForm({ ...programForm, price: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Mentor</label>
-                  <input
-                    type="text"
-                    value={programForm.mentor}
-                    onChange={(e) => setProgramForm({ ...programForm, mentor: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Gambar Banner</label>
-                  <input
-                    type="text"
-                    required
-                    value={programForm.image}
-                    onChange={(e) => setProgramForm({ ...programForm, image: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Deskripsi</label>
-                  <textarea
-                    rows={3}
-                    value={programForm.description}
-                    onChange={(e) => setProgramForm({ ...programForm, description: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Program
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* BLOG FORM */}
-            {modalType === "blog" && (
-              <form onSubmit={handleSaveBlog} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Judul Artikel</label>
-                  <input
-                    type="text"
-                    required
-                    value={blogForm.title}
-                    onChange={(e) => setBlogForm({ ...blogForm, title: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Kategori</label>
-                    <input
-                      type="text"
-                      value={blogForm.category}
-                      onChange={(e) => setBlogForm({ ...blogForm, category: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold mb-1">Penulis</label>
-                    <input
-                      type="text"
-                      value={blogForm.author}
-                      onChange={(e) => setBlogForm({ ...blogForm, author: e.target.value })}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                        isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                      }`}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Gambar Sampul</label>
-                  <input
-                    type="text"
-                    required
-                    value={blogForm.image}
-                    onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Ringkasan / Excerpt</label>
-                  <textarea
-                    rows={2}
-                    value={blogForm.excerpt}
-                    onChange={(e) => setBlogForm({ ...blogForm, excerpt: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Isi Konten Artikel</label>
-                  <textarea
-                    rows={4}
-                    value={blogForm.content}
-                    onChange={(e) => setBlogForm({ ...blogForm, content: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Artikel
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* TESTIMONIAL FORM */}
-            {modalType === "testimonial" && (
-              <form onSubmit={handleSaveTestimonial} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Nama Mahasiswa / Alumni</label>
-                  <input
-                    type="text"
-                    required
-                    value={testimonialForm.author}
-                    onChange={(e) => setTestimonialForm({ ...testimonialForm, author: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Pencapaian / Title</label>
-                  <input
-                    type="text"
-                    value={testimonialForm.title}
-                    onChange={(e) => setTestimonialForm({ ...testimonialForm, title: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Foto Avatar</label>
-                  <input
-                    type="text"
-                    value={testimonialForm.avatar}
-                    onChange={(e) => setTestimonialForm({ ...testimonialForm, avatar: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Kutipan / Ulasan</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={testimonialForm.quote}
-                    onChange={(e) => setTestimonialForm({ ...testimonialForm, quote: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-brand-purple text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Testimoni
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* TEAM FORM */}
-            {modalType === "team" && (
-              <form onSubmit={handleSaveTeam} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Nama Mentor / Staf</label>
-                  <input
-                    type="text"
-                    required
-                    value={teamForm.name}
-                    onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Jabatan / Role</label>
-                  <input
-                    type="text"
-                    value={teamForm.role}
-                    onChange={(e) => setTeamForm({ ...teamForm, role: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Foto Profil</label>
-                  <input
-                    type="text"
-                    value={teamForm.avatar}
-                    onChange={(e) => setTeamForm({ ...teamForm, avatar: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Bio / Deskripsi</label>
-                  <textarea
-                    rows={3}
-                    value={teamForm.description}
-                    onChange={(e) => setTeamForm({ ...teamForm, description: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  ></textarea>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-brand-purple text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Mentor
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* PARTNER FORM */}
-            {modalType === "partner" && (
-              <form onSubmit={handleSavePartner} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Nama Instansi / Mitra</label>
-                  <input
-                    type="text"
-                    required
-                    value={partnerForm.name}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, name: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Kategori (e.g., Universitas)</label>
-                  <input
-                    type="text"
-                    value={partnerForm.category}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, category: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">URL Logo</label>
-                  <input
-                    type="text"
-                    required
-                    value={partnerForm.logo}
-                    onChange={(e) => setPartnerForm({ ...partnerForm, logo: e.target.value })}
-                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs border outline-none ${
-                      isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"
-                    }`}
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setModalType(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 text-xs font-bold"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-brand-purple text-white text-xs font-bold shadow-lg"
-                  >
-                    Simpan Partner
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
