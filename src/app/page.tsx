@@ -2017,12 +2017,17 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </ul>
                       </div>
 
-                      <button className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
-                        isDarkMode ? "text-white border-brand-primary/45 hover:bg-brand-primary/10" : "text-brand-primary border-brand-primary/40 bg-brand-primary/5 hover:bg-brand-primary/10"
-                      }`}>
-                        Pelajari Lebih Lanjut
+                      <a
+                        href="https://wa.me/6281234567890?text=Halo%20Kayzen%20Academia,%20saya%20tertarik%20dengan%20Social%20Media%20Partnership"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                          isDarkMode ? "text-white border-brand-primary/45 hover:bg-brand-primary/10" : "text-brand-primary border-brand-primary/40 bg-brand-primary/5 hover:bg-brand-primary/10"
+                        }`}
+                      >
+                        <span>Hubungi Kami</span>
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                      </button>
+                      </a>
                     </div>
                   </div>
 
@@ -2075,12 +2080,17 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </ul>
                       </div>
 
-                      <button className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
-                        isDarkMode ? "text-white border-brand-purple/45 hover:bg-brand-purple/10" : "text-brand-purple border-brand-purple/40 bg-brand-purple/5 hover:bg-brand-purple/10"
-                      }`}>
-                        Pelajari Lebih Lanjut
+                      <a
+                        href="https://wa.me/6281234567890?text=Halo%20Kayzen%20Academia,%20saya%20tertarik%20dengan%20Mentorship%20Partnership"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                          isDarkMode ? "text-white border-brand-purple/45 hover:bg-brand-purple/10" : "text-brand-purple border-brand-purple/40 bg-brand-purple/5 hover:bg-brand-purple/10"
+                        }`}
+                      >
+                        <span>Hubungi Kami</span>
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </div>
