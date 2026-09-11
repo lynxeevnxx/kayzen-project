@@ -2849,7 +2849,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                 {/* 3 Featured Cards Row */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Card 1 */}
-                  <div className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all ${
+                  <Link href="/blog/5-kunci-utama-menulis-bab-pendahuluan-lkti" className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all cursor-pointer ${
                     isDarkMode 
                       ? "bg-brand-card/40 border-white/5 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5" 
                       : "bg-white border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-0.5"
@@ -2894,10 +2894,10 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Card 2 */}
-                  <div className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all ${
+                  <Link href="/blog/panduan-menyusun-hook-dan-argumentasi-esai" className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all cursor-pointer ${
                     isDarkMode 
                       ? "bg-brand-card/40 border-white/5 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5" 
                       : "bg-white border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-0.5"
@@ -2942,10 +2942,10 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Card 3 */}
-                  <div className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all ${
+                  <Link href="/blog/pitch-deck-and-financial-model-business-plan" className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all cursor-pointer ${
                     isDarkMode 
                       ? "bg-brand-card/40 border-white/5 hover:shadow-2xl hover:shadow-black/20 hover:-translate-y-0.5" 
                       : "bg-white border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-0.5"
@@ -2990,7 +2990,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
 
               </div>
@@ -3028,7 +3028,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                   <h2 className={`font-display text-xl font-bold text-left ${isDarkMode ? "text-white" : "text-gray-800"}`}>Artikel Terbaru</h2>
 
                   {/* Main Large Card */}
-                  <div className={`border rounded-3xl overflow-hidden group transition-all text-left ${
+                  <Link href="/blog/panduan-komprehensif-lolos-pendanaan-lkti" className={`border rounded-3xl overflow-hidden group transition-all text-left block cursor-pointer ${
                     isDarkMode ? "bg-brand-card/30 border-white/5 hover:shadow-black/20" : "bg-white border-gray-100 hover:shadow-xl hover:shadow-gray-200/50"
                   }`}>
                     <div className="relative aspect-[21/9] w-full bg-gray-100 overflow-hidden">
@@ -3080,12 +3080,13 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* List of 3 Horizontal Cards */}
                   <div className="space-y-6">
                     {[
                       {
+                        slug: "cara-efektif-review-literatur-mendeley",
                         title: "Cara Efektif Review Literatur & Penggunaan Reference Manager (Mendeley/Zotero)",
                         tag: "Riset & Metodologi",
                         tagBg: "bg-blue-50 text-blue-600 border-blue-100",
@@ -3096,6 +3097,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80"
                       },
                       {
+                        slug: "manajemen-waktu-dan-strategi-tim-lomba",
                         title: "Manajemen Waktu & Strategi Pembagian Peran Tim Lomba Mahasiswa",
                         tag: "Tips Lomba",
                         tagBg: "bg-amber-50 text-amber-600 border-amber-100",
@@ -3106,6 +3108,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         image: "/lomba_inovasi.png"
                       },
                       {
+                        slug: "mindset-juara-mengatasi-writers-block",
                         title: "Mindset Juara: Mengatasi Writer's Block saat Menyusun Executive Summary",
                         tag: "Esai",
                         tagBg: "bg-purple-50 text-purple-600 border-purple-100",
@@ -3116,7 +3119,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80"
                       }
                     ].map((item, i) => (
-                      <div key={i} className={`border p-4 rounded-2xl flex gap-4 sm:gap-6 items-center group transition-all text-left ${
+                      <Link key={i} href={`/blog/${item.slug}`} className={`border p-4 rounded-2xl flex gap-4 sm:gap-6 items-center group transition-all text-left block cursor-pointer ${
                         isDarkMode 
                           ? "bg-brand-card/30 border-white/5 hover:shadow-black/20" 
                           : "bg-white border-gray-100 hover:shadow-lg"
@@ -3142,14 +3145,14 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                             <span>👁️ {item.views}</span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
 
                   {/* Grid of Two Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
                     {/* Card 1 */}
-                    <div className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all text-left ${
+                    <Link href="/blog/checklist-validasi-ide-inovasi" className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all text-left block cursor-pointer ${
                       isDarkMode ? "bg-brand-card/30 border-white/5" : "bg-white border-gray-100 hover:shadow-xl"
                     }`}>
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
@@ -3174,10 +3177,10 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                           </h4>
                         </div>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Card 2 */}
-                    <div className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all text-left ${
+                    <Link href="/blog/tips-wawancara-finalis-presentasi" className={`border rounded-2xl overflow-hidden flex flex-col justify-between group transition-all text-left block cursor-pointer ${
                       isDarkMode ? "bg-brand-card/30 border-white/5" : "bg-white border-gray-100 hover:shadow-xl"
                     }`}>
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
@@ -3202,7 +3205,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                           </h4>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   </div>
 
                 </div>
