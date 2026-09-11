@@ -197,16 +197,16 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
-  // Nav Items Definition
+  // Nav Items Definition (Cleaned - 0 Emojis)
   const navItems = [
-    { id: "dashboard", label: "Dashboard Overview", icon: "📊", badge: null },
-    { id: "registrations", label: "Pendaftaran Peserta", icon: "👥", badge: registrations.length },
-    { id: "program", label: "Program & Bootcamp", icon: "🎓", badge: programs.length },
-    { id: "lomba", label: "Info Lomba & Beasiswa", icon: "🏆", badge: contests.length },
-    { id: "blog", label: "Blog & Artikel", icon: "✍️", badge: blogs.length },
-    { id: "testimonials", label: "Testimonial", icon: "💬", badge: testimonials.length },
-    { id: "team", label: "Tim & Mentor", icon: "👨‍🏫", badge: teamMembers.length },
-    { id: "partners", label: "Kemitraan & Partner", icon: "🤝", badge: partners.length },
+    { id: "dashboard", label: "Dashboard Overview", badge: null },
+    { id: "registrations", label: "Pendaftaran Peserta", badge: registrations.length },
+    { id: "program", label: "Program & Bootcamp", badge: programs.length },
+    { id: "lomba", label: "Info Lomba & Beasiswa", badge: contests.length },
+    { id: "blog", label: "Blog & Artikel", badge: blogs.length },
+    { id: "testimonials", label: "Testimonial", badge: testimonials.length },
+    { id: "team", label: "Tim & Mentor", badge: teamMembers.length },
+    { id: "partners", label: "Kemitraan & Partner", badge: partners.length },
   ];
 
   return (
@@ -217,8 +217,8 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Top Notification Toast */}
         {successMsg && (
-          <div className="fixed top-20 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce">
-            <span className="text-xl">✅</span>
+          <div className="fixed top-20 right-6 z-50 bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
+            <span className="font-bold text-xs">BERHASIL:</span>
             <span className="font-semibold text-sm">{successMsg}</span>
           </div>
         )}
@@ -230,7 +230,7 @@ export default function AdminPage() {
               <span className="px-3 py-1 bg-brand-purple/20 text-brand-purple text-xs font-bold rounded-full border border-brand-purple/30">
                 Kayzen CMS v2.0
               </span>
-              <span className="text-xs text-gray-400">Pusat Manajemen Client & Konten (Halaman Editor)</span>
+              <span className="text-xs text-gray-400">Pusat Pengelolaan Konten Web Client</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
               Admin Control Panel
@@ -240,20 +240,20 @@ export default function AdminPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={fetchAllData}
-              className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                 isDarkMode
                   ? "bg-white/5 border-white/10 hover:bg-white/10 text-gray-200"
                   : "bg-white border-slate-200 hover:bg-slate-100 text-slate-700 shadow-sm"
               }`}
             >
-              <span>🔄</span> Refresh Data
+              Refresh Data
             </button>
 
             <button
               onClick={handleExportCSV}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer"
             >
-              <span>📥</span> Export CSV Peserta
+              Export CSV Peserta
             </button>
           </div>
         </div>
@@ -284,10 +284,7 @@ export default function AdminPage() {
                           : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-base">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </div>
+                      <span className="font-semibold">{item.label}</span>
                       {item.badge !== null && (
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
@@ -335,78 +332,62 @@ export default function AdminPage() {
                     {/* STAT CARDS */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-400">Total Pendaftaran</span>
-                          <span className="p-2 rounded-xl bg-blue-500/10 text-blue-400 text-lg">👥</span>
-                        </div>
+                        <div className="text-xs font-semibold text-gray-400">Total Pendaftaran</div>
                         <div className="text-2xl font-extrabold mt-3">{registrations.length} Peserta</div>
-                        <div className="text-[11px] text-emerald-400 font-semibold mt-1">↑ Direct Live Sync</div>
+                        <div className="text-[11px] text-emerald-400 font-semibold mt-1">Direct Live Sync</div>
                       </div>
 
                       <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-400">Program Mentoring</span>
-                          <span className="p-2 rounded-xl bg-purple-500/10 text-purple-400 text-lg">🎓</span>
-                        </div>
+                        <div className="text-xs font-semibold text-gray-400">Program Mentoring</div>
                         <div className="text-2xl font-extrabold mt-3">{programs.length} Program</div>
                         <div className="text-[11px] text-purple-400 font-semibold mt-1">Rp 39.000 All Bootcamp</div>
                       </div>
 
                       <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-400">Info Lomba</span>
-                          <span className="p-2 rounded-xl bg-amber-500/10 text-amber-400 text-lg">🏆</span>
-                        </div>
+                        <div className="text-xs font-semibold text-gray-400">Info Lomba</div>
                         <div className="text-2xl font-extrabold mt-3">{contests.length} Perlombaan</div>
                         <div className="text-[11px] text-amber-400 font-semibold mt-1">Tingkat Nasional</div>
                       </div>
 
                       <div className={`p-5 rounded-2xl border transition-all ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-gray-400">Artikel Blog</span>
-                          <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 text-lg">✍️</span>
-                        </div>
+                        <div className="text-xs font-semibold text-gray-400">Artikel Blog</div>
                         <div className="text-2xl font-extrabold mt-3">{blogs.length} Artikel</div>
                         <div className="text-[11px] text-emerald-400 font-semibold mt-1">Published Active</div>
                       </div>
                     </div>
 
-                    {/* QUICK ACTIONS WITH DEDICATED PAGE LINKS */}
+                    {/* QUICK ACTIONS */}
                     <div className={`p-6 rounded-2xl border ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
-                      <h3 className="text-sm font-extrabold uppercase tracking-wider mb-4 text-gray-400">
-                        ⚡ Quick Action (Akses Halaman Editor Baru)
+                      <h3 className="text-xs font-extrabold uppercase tracking-wider mb-4 text-gray-400">
+                        Quick Actions (Halaman Editor Terpisah)
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <Link
                           href="/admin/program/editor"
-                          className="p-4 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
+                          className="p-4 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-400 font-bold text-xs text-center transition-all"
                         >
-                          <span className="text-2xl">🎓</span>
-                          <span>+ Tambah Program (Halaman Baru)</span>
+                          + Tambah Program
                         </Link>
 
                         <Link
                           href="/admin/lomba/editor"
-                          className="p-4 rounded-xl bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 text-amber-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
+                          className="p-4 rounded-xl bg-amber-600/10 hover:bg-amber-600/20 border border-amber-500/30 text-amber-400 font-bold text-xs text-center transition-all"
                         >
-                          <span className="text-2xl">🏆</span>
-                          <span>+ Tambah Lomba (Halaman Baru)</span>
+                          + Tambah Lomba
                         </Link>
 
                         <Link
                           href="/admin/blog/editor"
-                          className="p-4 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
+                          className="p-4 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 font-bold text-xs text-center transition-all"
                         >
-                          <span className="text-2xl">✍️</span>
-                          <span>+ Tulis Blog (Halaman Baru)</span>
+                          + Tulis Blog
                         </Link>
 
                         <Link
                           href="/admin/testimonial/editor"
-                          className="p-4 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs flex flex-col items-center gap-2 transition-all text-center"
+                          className="p-4 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 font-bold text-xs text-center transition-all"
                         >
-                          <span className="text-2xl">💬</span>
-                          <span>+ Testimonial (Halaman Baru)</span>
+                          + Testimonial
                         </Link>
                       </div>
                     </div>
@@ -493,7 +474,7 @@ export default function AdminPage() {
                         onClick={handleExportCSV}
                         className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer transition-all self-start sm:self-auto"
                       >
-                        📥 Export File CSV
+                        Export File CSV
                       </button>
                     </div>
 
@@ -614,14 +595,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Program & Bootcamp</h2>
-                        <p className="text-xs text-gray-400">Kelola katalog bootcamp dan paket mentoring di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Kelola katalog bootcamp dan paket mentoring</p>
                       </div>
 
                       <Link
                         href="/admin/program/editor"
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>+</span> Tambah Program (Halaman Baru)
+                        + Tambah Program
                       </Link>
                     </div>
 
@@ -657,7 +638,7 @@ export default function AdminPage() {
                                 href={`/admin/program/editor?id=${item.id}`}
                                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit (Halaman Baru)
+                                Edit
                               </Link>
                               <button
                                 onClick={() => handleDeleteProgram(item.id)}
@@ -679,14 +660,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Info Lomba & Beasiswa</h2>
-                        <p className="text-xs text-gray-400">Kelola info lomba karya tulis, teknologi, dan sains di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Kelola info lomba karya tulis, teknologi, dan sains</p>
                       </div>
 
                       <Link
                         href="/admin/lomba/editor"
-                        className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>+</span> Tambah Lomba (Halaman Baru)
+                        + Tambah Lomba
                       </Link>
                     </div>
 
@@ -723,7 +704,7 @@ export default function AdminPage() {
                                 href={`/admin/lomba/editor?id=${item.id}`}
                                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit (Halaman Baru)
+                                Edit
                               </Link>
                               <button
                                 onClick={() => handleDeleteContest(item.id)}
@@ -745,14 +726,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Blog & Artikel</h2>
-                        <p className="text-xs text-gray-400">Publikasi artikel riset, tips lomba, dan panduan akademis di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Publikasi artikel riset, tips lomba, dan panduan akademis</p>
                       </div>
 
                       <Link
                         href="/admin/blog/editor"
-                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>✍️</span> Tulis Blog (Halaman Baru)
+                        + Tulis Blog
                       </Link>
                     </div>
 
@@ -783,7 +764,7 @@ export default function AdminPage() {
                                 href={`/admin/blog/editor?id=${item.id}`}
                                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit (Halaman Baru)
+                                Edit
                               </Link>
                               <button
                                 onClick={() => handleDeleteBlog(item.id)}
@@ -805,14 +786,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Testimonial Mahasiswa</h2>
-                        <p className="text-xs text-gray-400">Kelola ulasan dan pencapaian alumni mentoring di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Kelola ulasan dan pencapaian alumni mentoring</p>
                       </div>
 
                       <Link
                         href="/admin/testimonial/editor"
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>+</span> Tambah Testimonial (Halaman Baru)
+                        + Tambah Testimonial
                       </Link>
                     </div>
 
@@ -835,7 +816,7 @@ export default function AdminPage() {
                               </div>
                             </div>
                             <p className="text-xs text-gray-300 italic mb-3">"{item.quote}"</p>
-                            <div className="text-amber-400 text-xs">{"★".repeat(item.rating || 5)}</div>
+                            <div className="text-amber-400 text-xs font-semibold">Rating: {item.rating || 5} / 5</div>
                           </div>
 
                           <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
@@ -845,7 +826,7 @@ export default function AdminPage() {
                                 href={`/admin/testimonial/editor?id=${item.id}`}
                                 className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                               >
-                                Edit (Halaman Baru)
+                                Edit
                               </Link>
                               <button
                                 onClick={() => handleDeleteTestimonial(item.id)}
@@ -867,14 +848,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Tim & Mentor</h2>
-                        <p className="text-xs text-gray-400">Kelola profil mentor dan instruktur Kayzen di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Kelola profil mentor dan instruktur Kayzen</p>
                       </div>
 
                       <Link
                         href="/admin/team/editor"
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>+</span> Tambah Mentor (Halaman Baru)
+                        + Tambah Mentor
                       </Link>
                     </div>
 
@@ -900,7 +881,7 @@ export default function AdminPage() {
                               href={`/admin/team/editor?id=${item.id}`}
                               className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold"
                             >
-                              Edit (Halaman Baru)
+                              Edit
                             </Link>
                             <button
                               onClick={() => handleDeleteTeam(item.id)}
@@ -921,14 +902,14 @@ export default function AdminPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <h2 className="text-xl font-bold">Kemitraan & Partner</h2>
-                        <p className="text-xs text-gray-400">Kelola logo instansi, universitas, dan mitra di Halaman Baru</p>
+                        <p className="text-xs text-gray-400">Kelola logo instansi, universitas, dan mitra</p>
                       </div>
 
                       <Link
                         href="/admin/partner/editor"
-                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all flex items-center gap-2 self-start sm:self-auto"
+                        className="px-4 py-2.5 bg-brand-purple hover:bg-purple-600 text-white rounded-xl text-xs font-bold shadow-lg transition-all self-start sm:self-auto"
                       >
-                        <span>+</span> Tambah Partner (Halaman Baru)
+                        + Tambah Partner
                       </Link>
                     </div>
 
@@ -953,7 +934,7 @@ export default function AdminPage() {
                               href={`/admin/partner/editor?id=${item.id}`}
                               className="px-2.5 py-1 rounded bg-white/10 text-[10px] font-bold"
                             >
-                              Edit (Halaman Baru)
+                              Edit
                             </Link>
                             <button
                               onClick={() => handleDeletePartner(item.id)}

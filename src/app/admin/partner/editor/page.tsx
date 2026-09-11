@@ -86,7 +86,7 @@ function PartnerEditorContent() {
             disabled={loading}
             className="px-6 py-3 bg-brand-purple hover:bg-purple-600 text-white font-bold text-xs rounded-xl shadow-lg cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "💾 Simpan Partner"}
+            {loading ? "Menyimpan..." : "Simpan Partner"}
           </button>
         </div>
 

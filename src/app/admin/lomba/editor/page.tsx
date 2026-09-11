@@ -91,7 +91,7 @@ function ContestEditorContent() {
             disabled={loading}
             className="px-6 py-3 bg-brand-purple hover:bg-purple-600 text-white font-bold text-xs rounded-xl shadow-lg cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "💾 Simpan Informasi Lomba"}
+            {loading ? "Menyimpan..." : "Simpan Informasi Lomba"}
           </button>
         </div>
 

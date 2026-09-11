@@ -88,7 +88,7 @@ function TestimonialEditorContent() {
             disabled={loading}
             className="px-6 py-3 bg-brand-purple hover:bg-purple-600 text-white font-bold text-xs rounded-xl shadow-lg cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "💾 Simpan Testimonial"}
+            {loading ? "Menyimpan..." : "Simpan Testimonial"}
           </button>
         </div>
 
@@ -172,7 +172,7 @@ function TestimonialEditorContent() {
                   </div>
                 </div>
                 <p className="text-xs italic text-gray-300">"{form.quote || "Kutipan testimoni akan muncul di sini..."}"</p>
-                <div className="text-amber-400 text-sm">{"★".repeat(form.rating || 5)}</div>
+                <div className="text-amber-400 text-xs font-semibold">Rating: {form.rating || 5} / 5</div>
               </div>
             </div>
           </div>

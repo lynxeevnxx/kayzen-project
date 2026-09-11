@@ -90,7 +90,7 @@ function ProgramEditorContent() {
             disabled={loading}
             className="px-6 py-3 bg-brand-primary hover:bg-blue-600 text-white font-bold text-xs rounded-xl shadow-lg cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "💾 Simpan Program Academy"}
+            {loading ? "Menyimpan..." : "Simpan Program Academy"}
           </button>
         </div>
 
