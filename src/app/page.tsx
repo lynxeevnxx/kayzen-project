@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Header from "@/components/Header";
 
 type Tab = "beranda" | "program" | "kemitraan" | "info-lomba" | "blog" | "tentang-kami";
 
@@ -13,11 +14,31 @@ interface UserProfile {
   [key: string]: unknown;
 }
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState<Tab>("beranda");
-  const [isDarkMode, setIsDarkMode] = useState(true);
+export default function Home({ initialTab }: { initialTab?: Tab }) {
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab || "beranda");
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedTheme = localStorage.getItem("kayzen_theme");
+      if (savedTheme !== null) {
+        setIsDarkMode(savedTheme === "dark");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  const handleSetIsDarkMode = (val: boolean) => {
+    setIsDarkMode(val);
+    try {
+      localStorage.setItem("kayzen_theme", val ? "dark" : "light");
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -49,93 +70,217 @@ export default function Home() {
   const [filterPeserta, setFilterPeserta] = useState("Semua");
   const [sortOrder, setSortOrder] = useState("Terbaru");
 
-  // Hero Carousel State
-  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
-  const [isHeroPaused, setIsHeroPaused] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [selectedContest, setSelectedContest] = useState<any | null>(null);
+  const [currentHeroImg, setCurrentHeroImg] = useState(0);
+  const [isHeroImgPaused, setIsHeroImgPaused] = useState(false);
 
-  const heroSlides = [
+  const heroImages = [
     {
-      badge: "BELAJAR HARI INI, BERINOVASI UNTUK ESOK",
-      title: "Tulis Ide. Riset Solusi.",
-      titleGradient: "Ciptakan Inovasi.",
-      description: "Kayzen Academia memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menghasilkan karya berkualitas yang memberi dampak nyata.",
-      image: "/hero_students.png",
-      primaryBtnText: "Jelajahi Program",
-      primaryTab: "program" as Tab,
-      secondaryBtnText: "Gabung Komunitas",
-      secondaryTab: "tentang-kami" as Tab,
-      statsBadge: "2K+",
-      statsTitle: "Ribuan Pelajar & Mahasiswa",
-      statsSub: "Telah berkembang bersama Kayzen Academia",
-      categoryTag: "Program Utama"
+      src: "/hero_students.png",
+      alt: "Kayzen Academia Students holding trophy",
+      caption: "Prestasi Alumni & Juara Kompetisi"
     },
     {
-      badge: "PENDAMPINGAN JUARA COMPETITION",
-      title: "Raih Tropi Juara & Beasiswa Impian",
-      titleGradient: "Bersama Mentor Expert.",
-      description: "Dapatkan bimbingan 1-on-1 pembuatan Esai, KTI, dan Proposal Bisnis dari para awardee & juara kompetisi tingkat nasional hingga internasional.",
-      image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=80",
-      primaryBtnText: "Cek Info Lomba",
-      primaryTab: "info-lomba" as Tab,
-      secondaryBtnText: "Lihat Program",
-      secondaryTab: "program" as Tab,
-      statsBadge: "98%",
-      statsTitle: "Peserta Lolos Babak Final",
-      statsSub: "Didampingi hingga tahap presentasi & awarded",
-      categoryTag: "Mentorship Lomba"
+      src: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80",
+      alt: "Kolaborasi & Mentorship Riset",
+      caption: "Pendampingan Riset 1-on-1"
     },
     {
-      badge: "PUBLIKASI ILMIAH & HKI BERKELAS",
-      title: "Terbitkan Jurnal Ilmiah Sinta & Scopus",
-      titleGradient: "Standar Reputasi Global.",
-      description: "Dari draf awal hingga terbit. Kami membimbing penyusunan paper riset yang memenuhi standar akademik bereputasi nasional dan internasional.",
-      image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-      primaryBtnText: "Kemitraan & Riset",
-      primaryTab: "kemitraan" as Tab,
-      secondaryBtnText: "Baca Blog Riset",
-      secondaryTab: "blog" as Tab,
-      statsBadge: "150+",
-      statsTitle: "Karya Ilmiah Terpublikasi",
-      statsSub: "Di berbagai jurnal bereputasi tinggi",
-      categoryTag: "Jurnal & HKI"
+      src: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1000&q=80",
+      alt: "Diskusi Proposal & Paper Scientific",
+      caption: "Publikasi Jurnal & HKI"
     },
     {
-      badge: "BOOTCAMP & WORKSHOP INTERAKTIF",
-      title: "Asah Skill Written & Critical Thinking",
-      titleGradient: "Secara Fleksibel.",
-      description: "Akses materi eksklusif, template penulisan profesional, dan sesi bedah karya interaktif bersama praktisi akademisi terkemuka.",
-      image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
-      primaryBtnText: "Pelajari Program",
-      primaryTab: "program" as Tab,
-      secondaryBtnText: "Tentang Kami",
-      secondaryTab: "tentang-kami" as Tab,
-      statsBadge: "50+",
-      statsTitle: "Bootcamp & Webinar Active",
-      statsSub: "Tersedia secara berkala setiap bulan",
-      categoryTag: "Skill Development"
+      src: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80",
+      alt: "Workshop & Seminar Interaktif",
+      caption: "Bootcamp Kepenulisan Ilmiah"
     }
   ];
 
   useEffect(() => {
-    if (isHeroPaused) return;
-    const interval = setInterval(() => {
-      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isHeroPaused, heroSlides.length]);
+    if (isHeroImgPaused) return;
+    const timer = setInterval(() => {
+      setCurrentHeroImg((prev) => (prev + 1) % heroImages.length);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [isHeroImgPaused, heroImages.length]);
 
-  const handleNextSlide = () => {
-    setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
-  };
+  // Program Detail State & Dummy Data
+  const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
 
-  const handlePrevSlide = () => {
-    setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  const programDetails: Record<string, {
+    id: string;
+    title: string;
+    badge: string;
+    badgeColor: string;
+    tagline: string;
+    description: string;
+    price: string;
+    originalPrice?: string;
+    rating: number;
+    reviewsCount: number;
+    studentsCount: string;
+    duration: string;
+    modulesCount: string;
+    certificate: boolean;
+    image: string;
+    instructor: {
+      name: string;
+      role: string;
+      avatar: string;
+      bio: string;
+    };
+    benefits: string[];
+    syllabus: { week: string; title: string; desc: string; }[];
+  }> = {
+    "essay-bootcamp": {
+      id: "essay-bootcamp",
+      title: "Essay Bootcamp: Masterclass Kepenulisan Esai Beasiswa & Lomba",
+      badge: "POPULAR BOOTCAMP",
+      badgeColor: "bg-brand-purple text-white border-brand-purple/40",
+      tagline: "Kuasai teknik menulis essay yang terstruktur, argumentatif, dan persuasif untuk menembus beasiswa dan juara kompetisi nasional.",
+      description: "Program bootcamp 4 minggu yang dirancang khusus untuk membantu pelajar dan mahasiswa memahami struktur penulisan esai kritis, teknik menyusun argumen yang logis, hingga trik lolos seleksi beasiswa top dunia.",
+      price: "Rp 149.000",
+      originalPrice: "Rp 299.000",
+      rating: 4.9,
+      reviewsCount: 128,
+      studentsCount: "850+",
+      duration: "4 Minggu (8 Sesi Live)",
+      modulesCount: "8 Modul Lengkap",
+      certificate: true,
+      image: "/essay_vector.png",
+      instructor: {
+        name: "Dinda Salsabila, M.Sc.",
+        role: "Awardee LPDP & Senior Research Mentor",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+        bio: "Peneliti dan penerima beasiswa LPDP di University of Edinburgh dengan pengalaman lebih dari 5 tahun membimbing 500+ mahasiswa menjuarai kompetisi esai nasional."
+      },
+      benefits: [
+        "Akses 8 Modul Pembelajaran Video HD & Template Esai",
+        "2x Sesi Live Mentoring & Bedah Draf 1-on-1 bersama Mentor",
+        "Review & Proofreading Draf Esai hingga Siap Submit",
+        "Grup Komunitas Eksklusif Telegram Alumni Bootcamp",
+        "Sertifikat Kelulusan Resmi Terverifikasi Kayzen Academia"
+      ],
+      syllabus: [
+        { week: "Minggu 1", title: "Fondasi & Structuring Ide Esai", desc: "Memahami pola pikir juri, menentukan topik kuat, dan membuat outline esai yang sistematis." },
+        { week: "Minggu 2", title: "Teknik Argumentasi & Data Synthesis", desc: "Menyusun klaim argumentatif berbasis data ilmiah dan menyintesis referensi tepercaya." },
+        { week: "Minggu 3", title: "Hooking Intro & Powerful Conclusion", desc: "Merancang pembuka esai yang memikat (hook) dan penutup yang meninggalkan kesan mendalam." },
+        { week: "Minggu 4", title: "Editing, Proofreading & Mock Interview", desc: "Simulasi bedah draf akhir, teknik formatting standar internasional, dan konsultasi siap submit." }
+      ]
+    },
+    "kti-bootcamp": {
+      id: "kti-bootcamp",
+      title: "KTI Bootcamp: Panduan Lengkap Karya Tulis Ilmiah & Penelitian",
+      badge: "MENTORSHIP EXPERT",
+      badgeColor: "bg-brand-primary text-white border-brand-primary/40",
+      tagline: "Pelajari metodologi penelitian, perancangan proposal riset, hingga teknik publikasi ilmiah terstruktur.",
+      description: "Bootcamp intensif 5 minggu untuk membimbing Anda dari tahap perumusan ide riset, peninjauan pustaka (literature review), metodologi kuantitatif/kualitatif, hingga penulisan pembahasan ilmiah yang akurat.",
+      price: "Rp 199.000",
+      originalPrice: "Rp 349.000",
+      rating: 4.8,
+      reviewsCount: 94,
+      studentsCount: "620+",
+      duration: "5 Minggu (10 Sesi Live)",
+      modulesCount: "10 Modul Lengkap",
+      certificate: true,
+      image: "/kti_vector.png",
+      instructor: {
+        name: "Raihan Putra, S.T., M.Eng.",
+        role: "Juara 1 LKTI Nasional & Researcher",
+        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&q=80",
+        bio: "Juara 1 LKTI Nasional UI & Peneliti Terpublikasi Scopus. Berpengalaman membimbing puluhan tim meraih medali PIMNAS dan LKTIN."
+      },
+      benefits: [
+        "Akses 10 Modul Pembelajaran Video HD & Template KTI Standar PIMNAS",
+        "Bedah Bab 1 sampai Bab 5 secara berkala tiap minggu",
+        "Panduan Olah Data SPSS & Software Reference (Mendeley/Zotero)",
+        "Simulasi Presentasi Final & Tanya Jawab Juri",
+        "Sertifikat Kelulusan Resmi Terverifikasi Kayzen Academia"
+      ],
+      syllabus: [
+        { week: "Minggu 1", title: "Perumusan Latar Belakang & Novelty Riset", desc: "Menemukan gap penelitian dan merumuskan ide riset yang inovatif serta realistis." },
+        { week: "Minggu 2", title: "Tinjauan Pustaka & Sitasi Otomatis", desc: "Teknik kompilasi jurnal dan penggunaan Reference Manager (Mendeley/Zotero)." },
+        { week: "Minggu 3", title: "Metodologi Penelitian & Olah Data", desc: "Menentukan metode pengumpulan data dan analisis statistik/kualitatif secara akurat." },
+        { week: "Minggu 4", title: "Pembahasan Hasil & Analisis Kritis", desc: "Menyusun bab pembahasan yang tajam dan menghubungkan hasil riset dengan teori pendukung." },
+        { week: "Minggu 5", title: "Poster Presentation & Pitching Juri", desc: "Merancang poster ilmiah menarik dan teknik menjawab pertanyaan kritis juri." }
+      ]
+    },
+    "bisnis-plan": {
+      id: "bisnis-plan",
+      title: "Bisnis Plan Bootcamp: Merancang Proposal Bisnis Inovatif & Investable",
+      badge: "STARTUP & PIMNAS",
+      badgeColor: "bg-brand-purple text-white border-brand-purple/40",
+      tagline: "Susun rencana bisnis yang terstruktur, rasional secara finansial, dan menarik minat juri kompetisi maupun investor.",
+      description: "Program bootcamp 4 minggu fokus pada pemetaan ide bisnis (Business Model Canvas), analisis pasar (TAM/SAM/SOM), rencana operasional, serta proyeksi keuangan (financial projection).",
+      price: "Rp 169.000",
+      originalPrice: "Rp 299.000",
+      rating: 4.7,
+      reviewsCount: 76,
+      studentsCount: "480+",
+      duration: "4 Minggu (8 Sesi Live)",
+      modulesCount: "8 Modul Lengkap",
+      certificate: true,
+      image: "/bisnis_vector.png",
+      instructor: {
+        name: "Muhammad Farhan, S.E.",
+        role: "Startup Founder & Awardee Business Plan",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+        bio: "Founder EduTech Startup & Winner Business Plan Competition ITB dengan pengalaman pendanaan hibah WMM & Kemendikbud."
+      },
+      benefits: [
+        "Akses Template Business Model Canvas (BMC) & Pitch Deck Pro",
+        "Sheet Formula Excel Otomatis untuk Proyeksi Keuangan 3-5 Tahun",
+        "Review Proposal Bisnis & Pitch Deck oleh Practitioner Mentor",
+        "Sertifikat Kelulusan Resmi Terverifikasi Kayzen Academia"
+      ],
+      syllabus: [
+        { week: "Minggu 1", title: "Validasi Ide & Business Model Canvas", desc: "Merumuskan Value Proposition dan memvalidasi ide bisnis sesuai problem konsumen." },
+        { week: "Minggu 2", title: "Market Research & Competitor Analysis", desc: "Menghitung estimasi pasar (TAM, SAM, SOM) dan strategi analisis kompetitor." },
+        { week: "Minggu 3", title: "Financial Modeling & Unit Economics", desc: "Penyusunan Cash Flow, COGS, Break-Even Point (BEP), dan proyeksi laba-rugi." },
+        { week: "Minggu 4", title: "Pitch Deck Design & Investor Pitching", desc: "Membuat slide presentasi yang memikat dan teknik penyampaian pitching 3 menit." }
+      ]
+    },
+    "startup-builder": {
+      id: "startup-builder",
+      title: "Startup Builder Cohort: Dari Validasi Ide hingga Initial Growth",
+      badge: "INCUBATION PROGRAM",
+      badgeColor: "bg-emerald-500 text-white border-emerald-400/40",
+      tagline: "Program inkubasi awal untuk membawa prototype produkmu menuju pasar yang sesungguhnya.",
+      description: "Program intensif 6 minggu untuk merancang MVP (Minimum Viable Product), uji coba pasar (go-to-market strategy), hingga siap melakukan fundraising awal.",
+      price: "Rp 249.000",
+      originalPrice: "Rp 499.000",
+      rating: 4.9,
+      reviewsCount: 42,
+      studentsCount: "210+",
+      duration: "6 Minggu (12 Sesi Live)",
+      modulesCount: "12 Modul Lengkap",
+      certificate: true,
+      image: "/startup_vector.png",
+      instructor: {
+        name: "Brooklyn Simmons, M.B.A.",
+        role: "Venture Builder & Mentor Startup",
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+        bio: "Mentor Inkubator Startup dengan portofolio mendampingi 20+ tim binaan mendapatkan pendanaan seed funding."
+      },
+      benefits: [
+        "Pendampingan Inkubasi Startup 1-on-1 mingguan",
+        "Akses Network Investor & Demo Day akhir program",
+        "Template Legalitas & Go-to-Market Strategy",
+        "Sertifikat Kelulusan Resmi Terverifikasi Kayzen Academia"
+      ],
+      syllabus: [
+        { week: "Minggu 1-2", title: "Customer Discovery & Prototyping", desc: "Wawancara konsumen mendalam dan membuat prototype MVP cepat." },
+        { week: "Minggu 3-4", title: "Go-to-Market & Acquisition Channel", desc: "Menentukan channel pemasaran digital paling efisien untuk meluncurkan produk." },
+        { week: "Minggu 5-6", title: "Fundraising & Demo Day Presentation", desc: "Persiapan sesi presentasi di depan angel investor dan juri juri inkubator." }
+      ]
+    }
   };
 
   // Navigation handlers
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
+    setSelectedProgramId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -198,24 +343,19 @@ export default function Home() {
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     )},
-    { name: "Inovasi & Teknologi", icon: (
+    { name: "Business Plan", icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     )},
-    { name: "Bisnis & Kewirausahaan", icon: (
+    { name: "Hackathon", icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4.67 12.89a4 4 0 11-5.34 0M18 16a2 2 0 012 2v3a2 2 0 01-2 2H6a2 2 0 01-2-2v-3a2 2 0 012-2h12z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
       </svg>
     )},
-    { name: "Desain & Media", icon: (
+    { name: "Teknologi & AI", icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    )},
-    { name: "Lingkungan & Sosial", icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h2a2.5 2.5 0 002.5-2.5V8.145m-1.5 10.3A12.042 12.042 0 1112 21c-4.756 0-8.879-2.738-10.945-6.755" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     )},
     { name: "Lainnya", icon: (
@@ -227,56 +367,64 @@ export default function Home() {
 
   const contests = [
     {
+      title: "Lomba Karya Tulis Ilmiah Nasional (LKTI) 2024",
+      category: "Karya Tulis Ilmiah",
+      status: "Pendaftaran Dibuka",
+      statusColor: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+      image: "/lomba_inovasi.png",
+      level: "Tingkat Nasional",
+      description: "Ajang gagasan kreatif & riset ilmiah mahasiswa seluruh Indonesia dalam menjawab tantangan keberlanjutan dan sains.",
+      deadline: "15 Juli 2024",
+      target: "Mahasiswa (D3, S1, S2)",
+      fee: "Gratis",
+      prize: "Rp 35.000.000",
+      tags: ["LKTI", "Riset Ilmiah", "Nasional"],
+      link: "https://google.com"
+    },
+    {
       title: "National Essay Competition 2024",
       category: "Esai",
       status: "Pendaftaran Dibuka",
-      statusColor: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+      statusColor: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
       image: "/lomba_essay.png",
       level: "Tingkat Nasional",
-      description: "Kompetisi esai nasional untuk pelajar dan mahasiswa dengan tema keberlanjutan dan masa depan Indonesia.",
+      description: "Kompetisi esai opini dan gagasan kritis mahasiswa serta siswa SMA se-Indonesia bertema transformasi digital.",
       deadline: "30 Juni 2024",
       target: "Pelajar SMA, Mahasiswa",
+      fee: "Rp 50.000 / Karya",
       prize: "Rp 25.000.000",
-      tags: ["Esai", "Nasional"]
-    },
-    {
-      title: "Indonesia Student Innovation Award 2024",
-      category: "Inovasi & Teknologi",
-      status: "Pendaftaran Dibuka",
-      statusColor: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-      image: "/lomba_inovasi.png",
-      level: "Tingkat Nasional",
-      description: "Ajang inovasi dan teknologi bagi mahasiswa untuk menciptakan solusi nyata bagi masyarakat.",
-      deadline: "15 Juli 2024",
-      target: "Mahasiswa (D3, S1)",
-      prize: "Rp 50.000.000",
-      tags: ["Inovasi", "Teknologi"]
+      tags: ["Esai", "Kepenulisan", "Nasional"],
+      link: "https://google.com"
     },
     {
       title: "Business Plan Competition 2024",
-      category: "Bisnis & Kewirausahaan",
+      category: "Business Plan",
       status: "Segera Ditutup",
       statusColor: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
       image: "/lomba_bisnis.png",
       level: "Tingkat Nasional",
-      description: "Kompetisi rencana bisnis untuk pelajar dan mahasiswa yang memiliki ide bisnis kreatif dan berdampak.",
+      description: "Tantangan pembuatan proposal rencana bisnis dan rancangan startup berdaya saing tinggi bagi inovator muda.",
       deadline: "25 Mei 2024",
       target: "Pelajar SMA, Mahasiswa",
-      prize: "Rp 30.000.000",
-      tags: ["Bisnis", "Kewirausahaan"]
+      fee: "Rp 75.000 / Tim",
+      prize: "Rp 50.000.000",
+      tags: ["Business Plan", "Startup", "Kewirausahaan"],
+      link: "https://google.com"
     },
     {
-      title: "National Design Challenge 2024",
-      category: "Desain & Media",
+      title: "National EdTech & AI Hackathon 2024",
+      category: "Hackathon",
       status: "Pendaftaran Dibuka",
       statusColor: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-      image: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=400&q=80",
+      image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80",
       level: "Tingkat Nasional",
-      description: "Tantangan desain grafis dan multimedia untuk pelajar dan mahasiswa berbakat dari seluruh Indonesia.",
-      deadline: "10 Juli 2024",
-      target: "Pelajar SMA, Mahasiswa",
-      prize: "Rp 20.000.000",
-      tags: ["Desain", "Media"]
+      description: "Ajang maraton pemrograman & inovasi solusi AI 48 jam untuk menciptakan aplikasi masa depan pendidikan Indonesia.",
+      deadline: "20 Agustus 2024",
+      target: "Mahasiswa & Umum",
+      fee: "Gratis",
+      prize: "Rp 60.000.000",
+      tags: ["Hackathon", "AI & Software", "EdTech"],
+      link: "https://google.com"
     }
   ];
 
@@ -376,351 +524,176 @@ export default function Home() {
 
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      isDarkMode ? "bg-[#03040b] text-white" : "bg-[#FAFBFD] text-gray-800"
-    } selection:bg-brand-purple selection:text-white`}>
+    <div 
+      suppressHydrationWarning
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
+        isDarkMode ? "bg-[#03040b] text-white" : "bg-[#FAFBFD] text-gray-800"
+      } selection:bg-brand-purple selection:text-white`}
+    >
       
       {/* HEADER / NAVBAR */}
-      <header className={`sticky top-0 z-50 px-6 lg:px-16 py-4 transition-all duration-300 border-b ${
-        isDarkMode 
-          ? "bg-[#03040b]/95 backdrop-blur-md border-white/5 text-white" 
-          : "bg-white/95 backdrop-blur-md border-black/5 text-[#0e1726]"
-      }`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleTabChange("beranda")}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shadow-lg shadow-brand-primary/20">
-              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-            </div>
-            <div>
-              <span className={`font-display font-bold text-xl tracking-wider block ${
-                isDarkMode ? "text-white" : "text-[#0e1726]"
-              }`}>KAYZEN</span>
-              <span className="text-[10px] tracking-[0.25em] text-brand-primary font-bold block -mt-1">ACADEMIA</span>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-7 lg:gap-8">
-            {[
-              { id: "beranda", label: "Beranda" },
-              { id: "program", label: "Program" },
-              { id: "kemitraan", label: "Kemitraan" },
-              { id: "info-lomba", label: "Info Lomba" },
-              { id: "blog", label: "Blog" },
-              { id: "tentang-kami", label: "Tentang Kami" }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id as Tab)}
-                className={`relative py-2 text-xs lg:text-sm font-medium transition-colors cursor-pointer ${
-                  activeTab === tab.id
-                    ? (isDarkMode ? "text-white font-semibold" : "text-[#0e1726] font-semibold")
-                    : (isDarkMode ? "text-brand-muted hover:text-white" : "text-gray-500 hover:text-gray-900")
-                }`}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-brand rounded-full" />
-                )}
-              </button>
-            ))}
-          </nav>
-
-          {/* Auth Action Buttons & Theme Toggle */}
-          <div className="flex items-center gap-4">
-            
-            {/* Dark/Light Mode Theme Toggle Switcher Button */}
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                isDarkMode
-                  ? "bg-white/[0.03] border-white/10 text-amber-400 hover:bg-white/[0.08] hover:border-white/20"
-                  : "bg-gray-100 border-gray-200 text-purple-600 hover:bg-gray-200 hover:border-gray-300"
-              }`}
-              title="Toggle Theme"
-            >
-              {isDarkMode ? (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464-5.636a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-5.05-1.243a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zm2-7a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
-            </button>
-
-            {currentUser ? (
-              <div className="relative">
-                <button
-                  onClick={() => setShowUserDropdown(!showUserDropdown)}
-                  className="flex items-center gap-2.5 p-1 px-3.5 rounded-xl border border-brand-purple/20 bg-brand-purple/5 hover:bg-brand-purple/10 transition-all cursor-pointer"
-                >
-                  <div className="relative w-6 h-6 rounded-full overflow-hidden border border-brand-purple/35">
-                    <Image src={currentUser.avatar} alt="User profile" fill className="object-cover" />
-                  </div>
-                  <span className={`text-xs font-semibold hidden sm:inline ${
-                    isDarkMode ? "text-white" : "text-gray-800"
-                  }`}>
-                    {currentUser.name}
-                  </span>
-                  <span className="text-[10px] text-brand-purple">▼</span>
-                </button>
-
-                {showUserDropdown && (
-                  <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl py-2 border transition-all duration-200 z-50 ${
-                    isDarkMode
-                      ? "bg-[#0c0e17] border-white/5 text-white"
-                      : "bg-white border-gray-100 text-gray-800"
-                  }`}>
-                    <div className="px-4 py-2 border-b border-white/5 text-left">
-                      <p className="text-xs font-bold truncate">{currentUser.name}</p>
-                      <p className="text-[10px] text-brand-muted truncate">{currentUser.email}</p>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                    >
-                      Keluar Sesi
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/masuk"
-                  className={`px-4.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    isDarkMode
-                      ? "text-white border border-white/10 hover:bg-white/5"
-                      : "text-gray-700 border border-gray-200 hover:bg-gray-100"
-                  }`}
-                >
-                  Masuk
-                </Link>
-                <Link
-                  href="/daftar"
-                  className="px-4.5 py-2.5 text-xs font-bold text-white bg-gradient-brand rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  Daftar
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <Header isDarkMode={isDarkMode} setIsDarkMode={handleSetIsDarkMode} activeTab={activeTab} />
 
       {/* MAIN CONTENT WRAPPER */}
       <main className="flex-grow">
 
 {activeTab === "beranda" && (
           <div className="space-y-24 pb-24">
-            {/* HERO CAROUSEL SECTION */}
-            <section 
-              className="relative pt-6 md:pt-12 px-6 lg:px-16 overflow-hidden"
-              onMouseEnter={() => setIsHeroPaused(true)}
-              onMouseLeave={() => setIsHeroPaused(false)}
-              onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-              onTouchEnd={(e) => {
-                if (touchStartX !== null) {
-                  const touchEndX = e.changedTouches[0].clientX;
-                  const diff = touchStartX - touchEndX;
-                  if (diff > 50) handleNextSlide();
-                  else if (diff < -50) handlePrevSlide();
-                  setTouchStartX(null);
-                }
-              }}
-            >
+            {/* HERO SECTION WITH SMOOTH IMAGE CAROUSEL */}
+            <section className="relative pt-12 md:pt-20 px-6 lg:px-16 overflow-hidden">
               <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
               <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
 
-              <div className="max-w-7xl mx-auto relative">
-                {/* Carousel Card Container */}
-                <div className={`relative rounded-3xl p-6 sm:p-10 border transition-all duration-500 overflow-hidden ${
-                  isDarkMode 
-                    ? "bg-[#090d18]/80 backdrop-blur-xl border-white/10 shadow-2xl shadow-black/80" 
-                    : "bg-white/90 backdrop-blur-xl border-gray-100 shadow-xl shadow-gray-200/50"
-                }`}>
+              <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                
+                {/* Left Side: Clean Text Content */}
+                <div className="lg:col-span-7 space-y-6 text-left">
+                  <span className="inline-block px-4 py-1.5 rounded-full text-xs font-semibold bg-brand-primary/15 text-brand-primary border border-brand-primary/30 tracking-wider">
+                    BELAJAR HARI INI, BERINOVASI UNTUK ESOK
+                  </span>
                   
-                  {/* Dynamic Slide Content */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[420px]">
-                    
-                    {/* Text Content */}
-                    <div className="lg:col-span-7 space-y-6 text-left transition-all duration-500 ease-in-out">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-brand-primary/15 text-brand-primary border border-brand-primary/30 tracking-wider uppercase">
-                          {heroSlides[currentHeroSlide].badge}
-                        </span>
-                        <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${
-                          isDarkMode ? "bg-white/5 border-white/10 text-gray-300" : "bg-gray-100 border-gray-200 text-gray-600"
-                        }`}>
-                          Slide {currentHeroSlide + 1} / {heroSlides.length}
-                        </span>
-                      </div>
-                      
-                      <h1 className={`font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                        {heroSlides[currentHeroSlide].title}<br />
-                        <span className="text-gradient">
-                          {heroSlides[currentHeroSlide].titleGradient}
-                        </span>
-                      </h1>
+                  <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                    Tulis Ide.<br />
+                    Riset Solusi.<br />
+                    <span className="text-gradient">Ciptakan Inovasi.</span>
+                  </h1>
 
-                      <p className={`text-sm sm:text-base max-w-xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
-                        {heroSlides[currentHeroSlide].description}
-                      </p>
+                  <p className={`text-base sm:text-lg max-w-xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                    Kayzen Academia memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menghasilkan karya berkualitas yang memberi dampak nyata.
+                  </p>
 
-                      {/* Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-4 pt-2">
-                        <button
-                          onClick={() => handleTabChange(heroSlides[currentHeroSlide].primaryTab)}
-                          className="px-6 py-3 text-xs sm:text-sm font-bold text-white bg-gradient-brand rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.03] active:scale-[0.97] transition-all cursor-pointer flex items-center gap-2"
-                        >
-                          <span>{heroSlides[currentHeroSlide].primaryBtnText}</span>
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                          </svg>
-                        </button>
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap items-center gap-4 pt-2">
+                    <button
+                      onClick={() => handleTabChange("program")}
+                      className="px-6 py-3.5 text-xs sm:text-sm font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
+                    >
+                      <span>Jelajahi Program</span>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </button>
 
-                        <button
-                          onClick={() => handleTabChange(heroSlides[currentHeroSlide].secondaryTab)}
-                          className={`px-6 py-3 text-xs sm:text-sm font-bold rounded-xl border transition-all cursor-pointer ${
-                            isDarkMode
-                              ? "text-white border-white/15 bg-white/5 hover:bg-white/10 hover:border-white/25"
-                              : "text-gray-700 border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400"
-                          }`}
-                        >
-                          {heroSlides[currentHeroSlide].secondaryBtnText}
-                        </button>
-                      </div>
-
-                      {/* Trust indicator / Stats */}
-                      <div className="flex items-center gap-4 pt-4 border-t border-white/10">
-                        <div className="flex -space-x-3">
-                          {[
-                            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
-                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
-                            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                          ].map((src, i) => (
-                            <div key={i} className={`relative w-8 h-8 rounded-full border-2 overflow-hidden ${isDarkMode ? "border-brand-dark" : "border-white"}`}>
-                              <Image src={src} alt="Student avatar" fill className="object-cover" />
-                            </div>
-                          ))}
-                          <div className="w-8 h-8 rounded-full border-2 border-brand-dark bg-gradient-purple flex items-center justify-center text-[10px] font-bold text-white">
-                            {heroSlides[currentHeroSlide].statsBadge}
-                          </div>
-                        </div>
-                        <div>
-                          <p className={`text-xs font-bold ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                            {heroSlides[currentHeroSlide].statsTitle}
-                          </p>
-                          <p className={`text-[11px] ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                            {heroSlides[currentHeroSlide].statsSub}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Graphic / Slide Image */}
-                    <div className="lg:col-span-5 relative w-full aspect-[4/3] sm:aspect-square sm:max-w-md lg:max-w-none mx-auto">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/30 to-brand-purple/30 rounded-3xl blur-2xl opacity-60" />
-                      <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl transition-all duration-700 ${
-                        isDarkMode ? "border-white/15 shadow-black/70 bg-brand-card" : "border-gray-200 shadow-gray-300 bg-white"
-                      }`}>
-                        <Image
-                          key={heroSlides[currentHeroSlide].image}
-                          src={heroSlides[currentHeroSlide].image}
-                          alt={heroSlides[currentHeroSlide].title}
-                          fill
-                          priority
-                          className="object-cover transition-transform duration-700 hover:scale-105"
-                        />
-                        {/* Overlay Badge */}
-                        <div className="absolute bottom-4 left-4 right-4 p-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-between text-white">
-                          <span className="text-xs font-bold tracking-wide">
-                            ✨ {heroSlides[currentHeroSlide].categoryTag}
-                          </span>
-                          <span className="text-[10px] text-brand-primary bg-brand-primary/20 px-2 py-0.5 rounded font-semibold">
-                            Kayzen Verified
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    <Link
+                      href="/daftar"
+                      className={`px-6 py-3.5 text-xs sm:text-sm font-bold rounded-xl border transition-all cursor-pointer ${
+                        isDarkMode
+                          ? "text-white border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20"
+                          : "text-gray-700 border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300"
+                      }`}
+                    >
+                      Gabung Komunitas
+                    </Link>
                   </div>
 
-                  {/* Navigation Controls & Indicators Bar */}
-                  <div className="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    
-                    {/* Slide Pill Tabs */}
-                    <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 scrollbar-none">
-                      {heroSlides.map((slide, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentHeroSlide(idx)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-2 ${
-                            currentHeroSlide === idx
-                              ? "bg-gradient-brand text-white shadow-md shadow-brand-primary/20 scale-105"
-                              : isDarkMode
-                              ? "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
-                          }`}
-                        >
-                          <span>0{idx + 1}.</span>
-                          <span>{slide.categoryTag}</span>
-                        </button>
+                  {/* Trust indicator */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
+                    <div className="flex -space-x-3">
+                      {[
+                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+                        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+                        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
+                      ].map((src, i) => (
+                        <div key={i} className={`relative w-10 h-10 rounded-full border-2 overflow-hidden ${isDarkMode ? "border-brand-dark" : "border-white"}`}>
+                          <Image src={src} alt="Student avatar" fill className="object-cover" />
+                        </div>
                       ))}
-                    </div>
-
-                    {/* Arrow Navigation & Auto Play Indicator */}
-                    <div className="flex items-center gap-3">
-                      <span className={`text-[11px] ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                        {isHeroPaused ? "Paused" : "Auto Play"}
-                      </span>
-                      
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={handlePrevSlide}
-                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                            isDarkMode
-                              ? "bg-white/5 border-white/10 text-white hover:bg-white/15"
-                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
-                          }`}
-                          title="Slide Sebelumnya"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-
-                        <button
-                          onClick={handleNextSlide}
-                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                            isDarkMode
-                              ? "bg-white/5 border-white/10 text-white hover:bg-white/15"
-                              : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
-                          }`}
-                          title="Slide Selanjutnya"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                          </svg>
-                        </button>
+                      <div className="w-10 h-10 rounded-full border-2 border-brand-dark bg-gradient-purple flex items-center justify-center text-xs font-bold text-white">
+                        2K+
                       </div>
                     </div>
-                  </div>
-
-                  {/* Progress Bar Line */}
-                  {!isHeroPaused && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
-                      <div 
-                        key={currentHeroSlide}
-                        className="h-full bg-gradient-brand animate-hero-progress" 
-                      />
+                    <div>
+                      <p className={`text-sm font-medium ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                        Ribuan pelajar dan mahasiswa
+                      </p>
+                      <p className={`text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`}>
+                        telah berkembang bersama Kayzen Academia.
+                      </p>
                     </div>
-                  )}
+                  </div>
                 </div>
+
+                {/* Right Side: Smooth Image-Only Carousel */}
+                <div 
+                  className="lg:col-span-5 relative w-full aspect-square sm:max-w-md lg:max-w-none mx-auto group"
+                  onMouseEnter={() => setIsHeroImgPaused(true)}
+                  onMouseLeave={() => setIsHeroImgPaused(false)}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/30 to-brand-purple/30 rounded-3xl blur-2xl opacity-60" />
+                  
+                  <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl transition-all ${
+                    isDarkMode ? "border-white/10 shadow-black/70 bg-brand-card" : "border-gray-200 shadow-gray-200 bg-white"
+                  }`}>
+                    {/* Images Stack with Smooth Cross-Fade */}
+                    {heroImages.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                          currentHeroImg === idx ? "opacity-100 z-10 scale-100" : "opacity-0 z-0 scale-105 pointer-events-none"
+                        }`}
+                      >
+                        <Image
+                          src={img.src}
+                          alt={img.alt}
+                          fill
+                          priority={idx === 0}
+                          className="object-cover transition-transform duration-1000 ease-out hover:scale-105"
+                        />
+                      </div>
+                    ))}
+
+                    {/* Bottom Overlay & Caption */}
+                    <div className="absolute bottom-0 left-0 right-0 z-20 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-end justify-between transition-opacity duration-300">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-brand-primary bg-brand-primary/20 px-2 py-0.5 rounded border border-brand-primary/30 inline-block mb-1">
+                          Kayzen Showcase
+                        </span>
+                        <p className="text-xs font-semibold text-white truncate max-w-[200px] sm:max-w-[240px]">
+                          {heroImages[currentHeroImg].caption}
+                        </p>
+                      </div>
+
+                      {/* Navigation Dots */}
+                      <div className="flex items-center gap-1.5 pb-1">
+                        {heroImages.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentHeroImg(idx)}
+                            className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
+                              currentHeroImg === idx
+                                ? "w-6 bg-brand-primary"
+                                : "w-2 bg-white/40 hover:bg-white/70"
+                            }`}
+                            title={`Slide ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Left / Right Floating Arrows (Appear on Hover) */}
+                    <button
+                      onClick={() => setCurrentHeroImg((prev) => (prev - 1 + heroImages.length) % heroImages.length)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 cursor-pointer"
+                      title="Gambar Sebelumnya"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={() => setCurrentHeroImg((prev) => (prev + 1) % heroImages.length)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-30 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 cursor-pointer"
+                      title="Gambar Selanjutnya"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </section>
 
@@ -1049,6 +1022,293 @@ export default function Home() {
               </div>
             </section>
 
+            {/* ANIMATED HORIZONTAL SCROLLING TESTIMONIALS MARQUEE SECTION */}
+            <section className="py-12 relative overflow-hidden">
+              <div className="max-w-7xl mx-auto px-6 lg:px-16 mb-10 text-center space-y-3">
+                <span className="inline-block px-3.5 py-1 rounded-full text-xs font-bold bg-brand-purple/15 text-brand-purple border border-brand-purple/30 tracking-wider uppercase">
+                  APA KATA MEREKA
+                </span>
+                <h2 className={`font-display text-3xl sm:text-4xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                  Testimoni Alumni & Peserta Kayzen
+                </h2>
+                <p className={`max-w-xl mx-auto text-sm ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                  Dengarkan cerita jujur dari ribuan pelajar dan mahasiswa yang telah bertumbuh bersama bimbingan Kayzen Academia.
+                </p>
+              </div>
+
+              {/* Infinite Horizontal Scrolling Tracks */}
+              <div className="space-y-6 pause-on-hover relative">
+                {/* Left/Right Fade Gradient Overlays for Seamless Edge Fade */}
+                <div className={`absolute top-0 bottom-0 left-0 w-24 sm:w-40 z-20 pointer-events-none ${
+                  isDarkMode 
+                    ? "bg-gradient-to-r from-[#03040b] via-[#03040b]/80 to-transparent" 
+                    : "bg-gradient-to-r from-[#FAFBFD] via-[#FAFBFD]/80 to-transparent"
+                }`} />
+                <div className={`absolute top-0 bottom-0 right-0 w-24 sm:w-40 z-20 pointer-events-none ${
+                  isDarkMode 
+                    ? "bg-gradient-to-l from-[#03040b] via-[#03040b]/80 to-transparent" 
+                    : "bg-gradient-to-l from-[#FAFBFD] via-[#FAFBFD]/80 to-transparent"
+                }`} />
+
+                {/* Marquee Row 1 (Moves Left) */}
+                <div className="flex overflow-hidden">
+                  <div className="animate-marquee-left gap-6 px-3">
+                    {[
+                      {
+                        name: "Dinda Salsabila",
+                        role: "Awardee LPDP 2024 & Peneliti",
+                        program: "Essay & Research Bootcamp",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+                        quote: "Kurikulum di Kayzen Academia mengajarkan saya cara riset yang terstruktur dan diakui secara global. Sangat membantu lolos beasiswa LPDP!"
+                      },
+                      {
+                        name: "Raihan Putra",
+                        role: "Juara 1 LKTI Nasional UI",
+                        program: "Mentorship KTI",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80",
+                        quote: "Pendampingan mentor benar-benar detail dari draf awal hingga simulasi tanya jawab juri. Tanpa Kayzen saya tidak akan dapat juara 1!"
+                      },
+                      {
+                        name: "Nabila Annisa",
+                        role: "Mahasiswi Kedokteran UGM",
+                        program: "Scopus Paper Accelerator",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80",
+                        quote: "Bisa submit paper pertama saya ke jurnal internasional berkat bimbingan intensif mentor Kayzen. Sangat direkomendasikan!"
+                      },
+                      {
+                        name: "Muhammad Farhan",
+                        role: "Winner Business Plan ITB",
+                        program: "Proposal Bisnis Bootcamp",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                        quote: "Penyusunan financial model dan pitch deck saya dikoreksi secara profesional. Hasilnya tim kami berhasil menduduki peringkat terbaik."
+                      },
+                      {
+                        name: "Sarah Wijaya",
+                        role: "Student Researcher Undip",
+                        program: "Kepenulisan Ilmiah",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+                        quote: "Format dan template penulisan di Kayzen sangat membantu saya menyelesaikan tugas akhir dan karya ilmiah dengan standar tinggi."
+                      }
+                    ].concat([
+                      {
+                        name: "Dinda Salsabila",
+                        role: "Awardee LPDP 2024 & Peneliti",
+                        program: "Essay & Research Bootcamp",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80",
+                        quote: "Kurikulum di Kayzen Academia mengajarkan saya cara riset yang terstruktur dan diakui secara global. Sangat membantu lolos beasiswa LPDP!"
+                      },
+                      {
+                        name: "Raihan Putra",
+                        role: "Juara 1 LKTI Nasional UI",
+                        program: "Mentorship KTI",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80",
+                        quote: "Pendampingan mentor benar-benar detail dari draf awal hingga simulasi tanya jawab juri. Tanpa Kayzen saya tidak akan dapat juara 1!"
+                      },
+                      {
+                        name: "Nabila Annisa",
+                        role: "Mahasiswi Kedokteran UGM",
+                        program: "Scopus Paper Accelerator",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80",
+                        quote: "Bisa submit paper pertama saya ke jurnal internasional berkat bimbingan intensif mentor Kayzen. Sangat direkomendasikan!"
+                      },
+                      {
+                        name: "Muhammad Farhan",
+                        role: "Winner Business Plan ITB",
+                        program: "Proposal Bisnis Bootcamp",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                        quote: "Penyusunan financial model dan pitch deck saya dikoreksi secara profesional. Hasilnya tim kami berhasil menduduki peringkat terbaik."
+                      },
+                      {
+                        name: "Sarah Wijaya",
+                        role: "Student Researcher Undip",
+                        program: "Kepenulisan Ilmiah",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+                        quote: "Format dan template penulisan di Kayzen sangat membantu saya menyelesaikan tugas akhir dan karya ilmiah dengan standar tinggi."
+                      }
+                    ]).map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`w-[320px] sm:w-[380px] p-6 rounded-2xl border flex flex-col justify-between space-y-4 flex-shrink-0 transition-all ${
+                          isDarkMode
+                            ? "bg-[#0a0d1a]/90 border-white/10 hover:border-brand-primary/40 shadow-lg hover:shadow-brand-primary/10"
+                            : "bg-white border-gray-200/80 hover:border-brand-primary/40 shadow-sm hover:shadow-md"
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-brand-primary bg-brand-primary/15 border border-brand-primary/30 px-2.5 py-1 rounded-md">
+                              {item.program}
+                            </span>
+                            <div className="flex items-center gap-1 text-amber-400 text-xs">
+                              {"★".repeat(item.rating)}
+                            </div>
+                          </div>
+                          <p className={`text-xs sm:text-sm leading-relaxed text-left italic ${
+                            isDarkMode ? "text-gray-200" : "text-gray-700"
+                          }`}>
+                            &quot;{item.quote}&quot;
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-3 border-t border-white/10 text-left">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-brand-purple/40 flex-shrink-0">
+                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <h4 className={`text-xs font-bold truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                              {item.name}
+                            </h4>
+                            <p className={`text-[11px] truncate ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                              {item.role}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Marquee Row 2 (Moves Right) */}
+                <div className="flex overflow-hidden pt-2">
+                  <div className="animate-marquee-right gap-6 px-3">
+                    {[
+                      {
+                        name: "Arif Mahendra",
+                        role: "Juara 1 Karya Tulis Kemenpora",
+                        program: "National Competition",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+                        quote: "Cara penyampaian materi sangat mudah dipahami. Saya yang tadinya tidak paham metodologi riset sekarang bisa menyusun karya ilmiah secara mandiri."
+                      },
+                      {
+                        name: "Kevin Lesmana",
+                        role: "Mahasiswa Teknik ITS",
+                        program: "Research Fellowship",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
+                        quote: "Komunitasnya sangat hangat dan suportif! Saya menemukan partner tim kolaborasi lomba dari universitas lain di Kayzen."
+                      },
+                      {
+                        name: "Siti Rahmawati",
+                        role: "Awardee Beasiswa Unggulan",
+                        program: "Essay Mastery",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=100&q=80",
+                        quote: "Bedah esai langsung dari praktisi membuat tulisan saya jauh lebih tajam dan meyakinkan. Worth it banget ikutan!"
+                      },
+                      {
+                        name: "Bagas Setiawan",
+                        role: "Inovator Muda Riset Biomedis",
+                        program: "Scopus Paper Cohort",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&q=80",
+                        quote: "Layanan review & proofreading di Kayzen terbukti berkualitas tinggi. Paper kami lolos terbit di jurnal reputasi internasional."
+                      },
+                      {
+                        name: "Aulia Putri",
+                        role: "Mahasiswi Akuntansi Unpad",
+                        program: "Business Pitching",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80",
+                        quote: "Sesi live Q&A dan feedback langsung membuat progress pengerjaan proposal bisnis saya jauh lebih cepat dari target."
+                      }
+                    ].concat([
+                      {
+                        name: "Arif Mahendra",
+                        role: "Juara 1 Karya Tulis Kemenpora",
+                        program: "National Competition",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+                        quote: "Cara penyampaian materi sangat mudah dipahami. Saya yang tadinya tidak paham metodologi riset sekarang bisa menyusun karya ilmiah secara mandiri."
+                      },
+                      {
+                        name: "Kevin Lesmana",
+                        role: "Mahasiswa Teknik ITS",
+                        program: "Research Fellowship",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80",
+                        quote: "Komunitasnya sangat hangat dan suportif! Saya menemukan partner tim kolaborasi lomba dari universitas lain di Kayzen."
+                      },
+                      {
+                        name: "Siti Rahmawati",
+                        role: "Awardee Beasiswa Unggulan",
+                        program: "Essay Mastery",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=100&q=80",
+                        quote: "Bedah esai langsung dari praktisi membuat tulisan saya jauh lebih tajam dan meyakinkan. Worth it banget ikutan!"
+                      },
+                      {
+                        name: "Bagas Setiawan",
+                        role: "Inovator Muda Riset Biomedis",
+                        program: "Scopus Paper Cohort",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&q=80",
+                        quote: "Layanan review & proofreading di Kayzen terbukti berkualitas tinggi. Paper kami lolos terbit di jurnal reputasi internasional."
+                      },
+                      {
+                        name: "Aulia Putri",
+                        role: "Mahasiswi Akuntansi Unpad",
+                        program: "Business Pitching",
+                        rating: 5,
+                        avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=100&q=80",
+                        quote: "Sesi live Q&A dan feedback langsung membuat progress pengerjaan proposal bisnis saya jauh lebih cepat dari target."
+                      }
+                    ]).map((item, idx) => (
+                      <div
+                        key={idx}
+                        className={`w-[320px] sm:w-[380px] p-6 rounded-2xl border flex flex-col justify-between space-y-4 flex-shrink-0 transition-all ${
+                          isDarkMode
+                            ? "bg-[#0a0d1a]/90 border-white/10 hover:border-brand-purple/40 shadow-lg hover:shadow-brand-purple/10"
+                            : "bg-white border-gray-200/80 hover:border-brand-purple/40 shadow-sm hover:shadow-md"
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-brand-purple bg-brand-purple/15 border border-brand-purple/30 px-2.5 py-1 rounded-md">
+                              {item.program}
+                            </span>
+                            <div className="flex items-center gap-1 text-amber-400 text-xs">
+                              {"★".repeat(item.rating)}
+                            </div>
+                          </div>
+                          <p className={`text-xs sm:text-sm leading-relaxed text-left italic ${
+                            isDarkMode ? "text-gray-200" : "text-gray-700"
+                          }`}>
+                            &quot;{item.quote}&quot;
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-3 border-t border-white/10 text-left">
+                          <div className="relative w-10 h-10 rounded-full overflow-hidden border border-brand-primary/40 flex-shrink-0">
+                            <Image src={item.avatar} alt={item.name} fill className="object-cover" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <h4 className={`text-xs font-bold truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                              {item.name}
+                            </h4>
+                            <p className={`text-[11px] truncate ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                              {item.role}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
             {/* CALL TO ACTION (CTA) SECTION */}
             <section className="px-6 lg:px-16">
               <div className="max-w-5xl mx-auto rounded-3xl bg-gradient-brand p-8 sm:p-12 relative overflow-hidden shadow-2xl shadow-brand-primary/20">
@@ -1085,305 +1345,510 @@ export default function Home() {
           </div>
         )}
 {activeTab === "program" && (
-          <div className="space-y-20 pb-24">
-            
-            {/* HERO SECTION */}
-            <section className="relative pt-12 md:pt-16 px-6 lg:px-16 overflow-hidden">
-              <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
-              <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="space-y-20 pb-24 text-white">
+            {selectedProgramId && programDetails[selectedProgramId] ? (
+              /* PROGRAM DETAIL VIEW */
+              <div className="space-y-12 pb-24">
+              <div className="max-w-7xl mx-auto px-6 lg:px-16 pt-6">
+                
+                {/* Top Navigation & Breadcrumb */}
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                  <button
+                    onClick={() => setSelectedProgramId(null)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                      isDarkMode ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-gray-100 border-gray-200 text-gray-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span>Kembali ke Daftar Program</span>
+                  </button>
 
-              <div className="max-w-7xl mx-auto">
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-xs font-semibold text-brand-purple uppercase tracking-wider mb-6">
-                  <span className="cursor-pointer hover:text-brand-primary text-left" onClick={() => handleTabChange("beranda")}>Program</span>
-                  <span className="text-gray-400">&gt;</span>
-                  <span className="text-brand-muted">Bootcamp</span>
+                  <div className="flex items-center gap-2 text-xs text-brand-muted">
+                    <span className="cursor-pointer hover:text-white" onClick={() => setSelectedProgramId(null)}>Program</span>
+                    <span>&gt;</span>
+                    <span className="text-brand-purple font-semibold">{programDetails[selectedProgramId].badge}</span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                {/* Hero Detail Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
                   
-                  {/* Text Content */}
-                  <div className="lg:col-span-7 space-y-6 text-left">
-                    <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                      Bootcamp Intensif untuk<br />
-                      Upgrade Skill, Bangun Portofolio,<br />
-                      <span className="text-gradient">dan Siap Berkarya</span>
-                    </h1>
-
-                    <p className={`text-sm sm:text-base max-w-2xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                      Program pembelajaran intensif dan terstruktur yang dirancang bersama mentor ahli industri untuk membantumu menguasai skill relevan dan siap menghadapi dunia nyata.
-                    </p>
-
-                    {/* Highlights horizontal bar */}
-                    <div className="grid grid-cols-2 gap-6 pt-4 sm:flex sm:flex-wrap">
-                      {[
-                        { title: "Belajar Praktis", desc: "Proyek nyata dan studi kasus relevan." },
-                        { title: "Mentor Ahli", desc: "Dibimbing langsung oleh praktisi." },
-                        { title: "Sertifikat", desc: "Dapatkan sertifikat portofolio." },
-                        { title: "Komunitas Aktif", desc: "Komunitas belajar suportif." }
-                      ].map((hl, i) => (
-                        <div key={i} className="flex gap-3 max-w-[200px]">
-                          <div className="flex-shrink-0 mt-1">
-                            <span className="flex w-2.5 h-2.5 rounded-full bg-gradient-brand" />
-                          </div>
-                          <div>
-                            <h4 className={`text-xs font-bold ${isDarkMode ? "text-white" : "text-gray-800"}`}>{hl.title}</h4>
-                            <p className={`text-[10px] leading-snug mt-0.5 ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`}>{hl.desc}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Graphic Image */}
-                  <div className="lg:col-span-5 relative w-full aspect-video sm:max-w-md lg:max-w-none mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/10 to-brand-purple/10 rounded-3xl blur-2xl opacity-50" />
-                    <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${isDarkMode ? "border-white/10 bg-brand-card shadow-black/60" : "border-gray-200 bg-white shadow-gray-200"}`}>
-                      <Image
-                        src="/program_hero_students.png"
-                        alt="Students collaborating on laptop"
-                        fill
-                        priority
-                        className="object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* PROGRAM BOOTCAMP KAMI */}
-            <section className="px-6 lg:px-16">
-              <div className="max-w-7xl mx-auto space-y-12">
-                <div className="text-center space-y-3">
-                  <h2 className={`font-display text-3xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-800"}`}>Program Bootcamp Kami</h2>
-                  <div className="w-16 h-[3px] bg-gradient-brand mx-auto rounded-full" />
-                </div>
-
-                {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  
-                  {/* Essay Bootcamp */}
-                  <div className={`rounded-2xl overflow-hidden flex flex-col group border ${
-                    isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/30" : "bg-white border-gray-100 shadow-sm"
-                  }`}>
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
-                      <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-purple text-white uppercase tracking-wider">
-                        Popular
+                  {/* Left Content */}
+                  <div className="lg:col-span-8 space-y-10 text-left">
+                    
+                    <div className="space-y-4">
+                      <span className={`px-3.5 py-1 rounded-full text-xs font-bold border inline-block ${programDetails[selectedProgramId].badgeColor}`}>
+                        ✨ {programDetails[selectedProgramId].badge}
                       </span>
-                      <Image
-                        src="/essay_vector.png"
-                        alt="Essay Bootcamp"
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
-                      <div className="space-y-2 text-left">
-                        <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-purple transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                          Essay Bootcamp
-                        </h3>
-                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Kuasai teknik menulis essay yang terstruktur, argumentatif, dan berdampak untuk beasiswa, kompetisi, dan publikasi.
-                        </p>
-                      </div>
                       
-                      {/* Specs */}
-                      <div className="space-y-2.5 pt-2 text-xs border-t border-white/5 text-left">
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span>8 Modul</span>
+                      <h1 className={`font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                        {programDetails[selectedProgramId].title}
+                      </h1>
+
+                      <p className={`text-base sm:text-lg leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
+                        {programDetails[selectedProgramId].tagline}
+                      </p>
+
+                      {/* Metrics Bar */}
+                      <div className="flex flex-wrap items-center gap-6 text-xs border-y border-white/10 py-4">
+                        <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+                          <span className="text-base">★</span>
+                          <span>{programDetails[selectedProgramId].rating}</span>
+                          <span className="text-brand-muted font-normal">({programDetails[selectedProgramId].reviewsCount} ulasan)</span>
                         </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>4 Minggu</span>
+                        <div className="flex items-center gap-2 text-brand-muted">
+                          <svg className="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                          <span>{programDetails[selectedProgramId].studentsCount} Peserta Alumni</span>
                         </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                          <span>Sertifikat Kelulusan</span>
+                        <div className="flex items-center gap-2 text-brand-muted">
+                          <svg className="w-4 h-4 text-brand-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <span>{programDetails[selectedProgramId].duration}</span>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Instructor Card */}
+                    <div className={`p-6 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center gap-5 ${
+                      isDarkMode ? "bg-[#090d18] border-white/10" : "bg-white border-gray-200 shadow-sm"
+                    }`}>
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-brand-purple flex-shrink-0">
+                        <Image src={programDetails[selectedProgramId].instructor.avatar} alt={programDetails[selectedProgramId].instructor.name} fill className="object-cover" />
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-brand-purple tracking-wider">MENTOR UTAMA PROGRAM</span>
+                        <h3 className={`text-base font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{programDetails[selectedProgramId].instructor.name}</h3>
+                        <p className="text-xs text-brand-primary font-semibold">{programDetails[selectedProgramId].instructor.role}</p>
+                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>{programDetails[selectedProgramId].instructor.bio}</p>
+                      </div>
+                    </div>
+
+                    {/* Description & Benefits */}
+                    <div className="space-y-4">
+                      <h3 className={`font-display text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Deskripsi & Gambaran Program</h3>
+                      <p className={`text-sm leading-relaxed ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}>
+                        {programDetails[selectedProgramId].description}
+                      </p>
+
+                      <div className="pt-4">
+                        <h4 className={`font-display text-base font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Fasilitas & Manfaat yang Didapatkan:</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {programDetails[selectedProgramId].benefits.map((benefit, idx) => (
+                            <div key={idx} className={`p-3.5 rounded-xl border flex items-start gap-3 text-xs font-semibold ${
+                              isDarkMode ? "bg-white/5 border-white/5 text-gray-200" : "bg-gray-50 border-gray-200 text-gray-800"
+                            }`}>
+                              <span className="text-emerald-400 font-bold text-base leading-none">✓</span>
+                              <span>{benefit}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Syllabus Accordion */}
+                    <div className="space-y-6 pt-4">
+                      <div className="space-y-1">
+                        <h3 className={`font-display text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Silabus & Modul Pembelajaran</h3>
+                        <p className={`text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Struktur materi terarah untuk memastikan pemahaman maksimal.</p>
                       </div>
 
-                      <button className="w-full py-2.5 text-xs text-center font-bold text-white border border-brand-purple/40 hover:bg-brand-purple/10 bg-brand-purple/5 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn cursor-pointer">
-                        Learn more
-                        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </button>
+                      <div className="space-y-4">
+                        {programDetails[selectedProgramId].syllabus.map((item, idx) => (
+                          <div key={idx} className={`p-5 rounded-2xl border ${
+                            isDarkMode ? "bg-[#090d18] border-white/10" : "bg-white border-gray-200"
+                          }`}>
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-brand-primary/20 text-brand-primary border border-brand-primary/30 uppercase">
+                                {item.week}
+                              </span>
+                              <h4 className={`font-bold text-sm ${isDarkMode ? "text-white" : "text-gray-900"}`}>{item.title}</h4>
+                            </div>
+                            <p className={`text-xs leading-relaxed pl-1 ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>{item.desc}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+
                   </div>
 
-                  {/* KTI Bootcamp */}
-                  <div className={`rounded-2xl overflow-hidden flex flex-col group border ${
-                    isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-primary/30" : "bg-white border-gray-100 shadow-sm"
-                  }`}>
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
-                      <Image
-                        src="/kti_vector.png"
-                        alt="KTI Bootcamp"
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
-                      <div className="space-y-2 text-left">
-                        <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-primary transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                          KTI Bootcamp
-                        </h3>
-                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Pelajari metodologi penelitian, penulisan karya tulis ilmiah, hingga publikasi yang sistematis dan sesuai standar akademik.
-                        </p>
+                  {/* Right Sticky Card */}
+                  <div className="lg:col-span-4 sticky top-24 space-y-6">
+                    <div className={`p-6 rounded-3xl border shadow-2xl space-y-6 ${
+                      isDarkMode ? "bg-[#090d18] border-white/15 shadow-black/80" : "bg-white border-gray-200 shadow-xl"
+                    }`}>
+                      <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-brand-card border border-white/10">
+                        <Image src={programDetails[selectedProgramId].image} alt={programDetails[selectedProgramId].title} fill className="object-cover" />
                       </div>
-                      
-                      {/* Specs */}
-                      <div className="space-y-2.5 pt-2 text-xs border-t border-white/5 text-left">
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span>10 Modul</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>5 Minggu</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                          <span>Sertifikat Kelulusan</span>
+
+                      <div className="space-y-1 text-left">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Harga Spesial Batch Terbaru</span>
+                        <div className="flex items-baseline gap-3">
+                          <span className="text-3xl font-extrabold font-display text-white">{programDetails[selectedProgramId].price}</span>
+                          {programDetails[selectedProgramId].originalPrice && (
+                            <span className="text-sm line-through text-gray-400">{programDetails[selectedProgramId].originalPrice}</span>
+                          )}
                         </div>
                       </div>
 
-                      <button className="w-full py-2.5 text-xs text-center font-bold text-white border border-brand-primary/40 hover:bg-brand-primary/10 bg-brand-primary/5 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn cursor-pointer">
-                        Learn more
-                        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                      <div className="space-y-3 pt-2">
+                        <button
+                          onClick={() => alert(`Pendaftaran untuk ${programDetails[selectedProgramId].title} berhasil dipilih!`)}
+                          className="w-full py-3.5 text-xs sm:text-sm font-bold text-white bg-gradient-brand rounded-xl shadow-lg shadow-brand-primary/25 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <span>Daftar Bootcamp Sekarang</span>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </button>
 
-                  {/* Bisnis Plan */}
-                  <div className={`rounded-2xl overflow-hidden flex flex-col group border ${
-                    isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/30" : "bg-white border-gray-100 shadow-sm"
-                  }`}>
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
-                      <Image
-                        src="/bisnis_vector.png"
-                        alt="Bisnis Plan Bootcamp"
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
-                      <div className="space-y-2 text-left">
-                        <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-purple transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                          Bisnis Plan Bootcamp
-                        </h3>
-                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Bangun ide bisnis menjadi rencana yang terstruktur, strategic, dan menarik bagi investor.
-                        </p>
-                      </div>
-                      
-                      {/* Specs */}
-                      <div className="space-y-2.5 pt-2 text-xs border-t border-white/5 text-left">
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span>8 Modul</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>4 Minggu</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                          <span>Sertifikat Kelulusan</span>
-                        </div>
+                        <button
+                          onClick={() => alert("Silakan hubungi admin kami via WhatsApp/Live Chat untuk konsultasi gratis!")}
+                          className={`w-full py-3 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                            isDarkMode ? "text-white border-white/15 hover:bg-white/5" : "text-gray-700 border-gray-300 hover:bg-gray-100"
+                          }`}
+                        >
+                          Konsultasi dengan Admin
+                        </button>
                       </div>
 
-                      <button className="w-full py-2.5 text-xs text-center font-bold text-white border border-brand-purple/40 hover:bg-brand-purple/10 bg-brand-purple/5 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn cursor-pointer">
-                        Learn more
-                        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Startup Builder */}
-                  <div className={`rounded-2xl overflow-hidden flex flex-col opacity-85 hover:opacity-100 transition-opacity border ${
-                    isDarkMode ? "glassmorphism-card border-white/5" : "bg-white border-gray-100 shadow-sm"
-                  }`}>
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
-                      <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/10 text-white uppercase tracking-wider">
-                        Coming Soon
-                      </span>
-                      <Image
-                        src="/startup_vector.png"
-                        alt="Startup Builder"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
-                      <div className="space-y-2 text-left">
-                        <h3 className={`font-display font-bold text-base leading-snug ${isDarkMode ? "text-white" : "text-gray-800"}`}>
-                          Startup Builder
-                        </h3>
-                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Persiapkan dan bangun startup-mu dari ide, validasi, hingga strategi growth yang berkelanjutan.
-                        </p>
+                      <div className="space-y-2 pt-2 border-t border-white/10 text-left text-[11px] text-brand-muted">
+                        <div className="flex items-center gap-2 text-gray-300">✓ Garansi Rekaman Pembelajaran HD</div>
+                        <div className="flex items-center gap-2 text-gray-300">✓ Sertifikat Berkode QR Resmi</div>
+                        <div className="flex items-center gap-2 text-gray-300">✓ Komunitas Diskusi Alumni Selamanya</div>
                       </div>
-                      
-                      {/* Specs */}
-                      <div className="space-y-2.5 pt-2 text-xs border-t border-white/5 text-left">
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                          <span>Segera Hadir</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Coming Soon</span>
-                        </div>
-                        <div className="flex items-center gap-2.5 text-brand-muted">
-                          <svg className="w-4 h-4 text-brand-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                          <span>Sertifikat Kelulusan</span>
-                        </div>
-                      </div>
-
-                      <button disabled className="w-full py-2.5 text-xs text-center font-bold text-white/50 bg-white/5 border border-white/5 rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-1.5">
-                        Learn more
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </button>
                     </div>
                   </div>
 
                 </div>
               </div>
-            </section>
+            </div>
+          ) : (
+            /* PROGRAM LIST VIEW */
+            <>
+              {/* HERO SECTION */}
+              <section className="relative pt-12 md:pt-16 px-6 lg:px-16 overflow-hidden">
+                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="max-w-7xl mx-auto">
+                  {/* Breadcrumb */}
+                  <div className="flex items-center gap-2 text-xs font-semibold text-brand-purple uppercase tracking-wider mb-6">
+                    <span className="cursor-pointer hover:text-brand-primary text-left" onClick={() => handleTabChange("beranda")}>Program</span>
+                    <span className="text-gray-400">&gt;</span>
+                    <span className="text-brand-muted">Bootcamp</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    
+                    {/* Text Content */}
+                    <div className="lg:col-span-7 space-y-6 text-left">
+                      <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                        Bootcamp Intensif untuk<br />
+                        Upgrade Skill, Bangun Portofolio,<br />
+                        <span className="text-gradient">dan Siap Berkarya</span>
+                      </h1>
+
+                      <p className={`text-sm sm:text-base max-w-2xl leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                        Program pembelajaran intensif dan terstruktur yang dirancang bersama mentor ahli industri untuk membantumu menguasai skill relevan dan siap menghadapi dunia nyata.
+                      </p>
+
+                      {/* Highlights horizontal bar */}
+                      <div className="grid grid-cols-2 gap-6 pt-4 sm:flex sm:flex-wrap">
+                        {[
+                          { title: "Belajar Praktis", desc: "Proyek nyata dan studi kasus relevan." },
+                          { title: "Mentor Ahli", desc: "Dibimbing langsung oleh praktisi." },
+                          { title: "Sertifikat", desc: "Dapatkan sertifikat portofolio." },
+                          { title: "Komunitas Aktif", desc: "Komunitas belajar suportif." }
+                        ].map((hl, i) => (
+                          <div key={i} className="flex gap-3 max-w-[200px]">
+                            <div className="flex-shrink-0 mt-1">
+                              <span className="flex w-2.5 h-2.5 rounded-full bg-gradient-brand" />
+                            </div>
+                            <div>
+                              <h4 className={`text-xs font-bold ${isDarkMode ? "text-white" : "text-gray-800"}`}>{hl.title}</h4>
+                              <p className={`text-[10px] leading-snug mt-0.5 ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`}>{hl.desc}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Graphic Image */}
+                    <div className="lg:col-span-5 relative w-full aspect-video sm:max-w-md lg:max-w-none mx-auto">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/10 to-brand-purple/10 rounded-3xl blur-2xl opacity-50" />
+                      <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${isDarkMode ? "border-white/10 bg-brand-card shadow-black/60" : "border-gray-200 bg-white shadow-gray-200"}`}>
+                        <Image
+                          src="/program_hero_students.png"
+                          alt="Students collaborating on laptop"
+                          fill
+                          priority
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* PROGRAM BOOTCAMP KAMI */}
+              <section className="px-6 lg:px-16">
+                <div className="max-w-7xl mx-auto space-y-12">
+                  <div className="text-center space-y-3">
+                    <h2 className={`font-display text-3xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-800"}`}>Program Bootcamp Kami</h2>
+                    <div className="w-16 h-[3px] bg-gradient-brand mx-auto rounded-full" />
+                  </div>
+
+                  {/* Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    
+                    {/* Essay Bootcamp */}
+                    <Link 
+                      href="/program/essay-bootcamp"
+                      className={`rounded-2xl overflow-hidden flex flex-col group border cursor-pointer ${
+                        isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/40" : "bg-white border-gray-100 shadow-sm"
+                      }`}
+                    >
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
+                        <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-purple text-white uppercase tracking-wider">
+                          Popular
+                        </span>
+                        <Image
+                          src="/essay_vector.png"
+                          alt="Essay Bootcamp"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
+                        <div className="space-y-2 text-left">
+                          <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-purple transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                            Essay Bootcamp
+                          </h3>
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            Kuasai teknik menulis essay yang terstruktur, argumentatif, dan berdampak untuk beasiswa, kompetisi, dan publikasi.
+                          </p>
+                        </div>
+                        
+                        {/* Specs */}
+                        <div className={`space-y-2.5 pt-2 text-xs border-t text-left ${isDarkMode ? "border-white/5 text-brand-muted" : "border-gray-200 text-gray-600"}`}>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>8 Modul</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>4 Minggu</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Sertifikat Kelulusan</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-full py-2.5 text-xs text-center font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn ${
+                          isDarkMode
+                            ? "text-white border border-brand-purple/40 bg-brand-purple/10 hover:bg-brand-purple/20"
+                            : "text-brand-purple border border-brand-purple/30 bg-brand-purple/10 hover:bg-brand-purple/20"
+                        }`}>
+                          Learn more
+                          <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* KTI Bootcamp */}
+                    <Link 
+                      href="/program/kti-bootcamp"
+                      className={`rounded-2xl overflow-hidden flex flex-col group border cursor-pointer ${
+                        isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-primary/40" : "bg-white border-gray-100 shadow-sm"
+                      }`}
+                    >
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
+                        <Image
+                          src="/kti_vector.png"
+                          alt="KTI Bootcamp"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
+                        <div className="space-y-2 text-left">
+                          <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-primary transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                            KTI Bootcamp
+                          </h3>
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            Pelajari metodologi penelitian, penulisan karya tulis ilmiah, hingga publikasi yang sistematis dan sesuai standar akademik.
+                          </p>
+                        </div>
+                        
+                        {/* Specs */}
+                        <div className={`space-y-2.5 pt-2 text-xs border-t text-left ${isDarkMode ? "border-white/5 text-brand-muted" : "border-gray-200 text-gray-600"}`}>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>10 Modul</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>5 Minggu</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Sertifikat Kelulusan</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-full py-2.5 text-xs text-center font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn ${
+                          isDarkMode
+                            ? "text-white border border-brand-primary/40 bg-brand-primary/10 hover:bg-brand-primary/20"
+                            : "text-brand-primary border border-brand-primary/30 bg-brand-primary/10 hover:bg-brand-primary/20"
+                        }`}>
+                          Learn more
+                          <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Bisnis Plan */}
+                    <Link 
+                      href="/program/bisnis-plan"
+                      className={`rounded-2xl overflow-hidden flex flex-col group border cursor-pointer ${
+                        isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/40" : "bg-white border-gray-100 shadow-sm"
+                      }`}
+                    >
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
+                        <Image
+                          src="/bisnis_vector.png"
+                          alt="Bisnis Plan Bootcamp"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
+                        <div className="space-y-2 text-left">
+                          <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-purple transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                            Bisnis Plan Bootcamp
+                          </h3>
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            Bangun ide bisnis menjadi rencana yang terstruktur, strategic, dan menarik bagi investor.
+                          </p>
+                        </div>
+                        
+                        {/* Specs */}
+                        <div className={`space-y-2.5 pt-2 text-xs border-t text-left ${isDarkMode ? "border-white/5 text-brand-muted" : "border-gray-200 text-gray-600"}`}>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>8 Modul</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>4 Minggu</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Sertifikat Kelulusan</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-full py-2.5 text-xs text-center font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn ${
+                          isDarkMode
+                            ? "text-white border border-brand-purple/40 bg-brand-purple/10 hover:bg-brand-purple/20"
+                            : "text-brand-purple border border-brand-purple/30 bg-brand-purple/10 hover:bg-brand-purple/20"
+                        }`}>
+                          Learn more
+                          <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Startup Builder */}
+                    <Link 
+                      href="/program/startup-builder"
+                      className={`rounded-2xl overflow-hidden flex flex-col group border cursor-pointer ${
+                        isDarkMode ? "glassmorphism-card border-white/5 hover:border-emerald-500/40" : "bg-white border-gray-100 shadow-sm"
+                      }`}
+                    >
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
+                        <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-500 text-white uppercase tracking-wider">
+                          Incubation
+                        </span>
+                        <Image
+                          src="/startup_vector.png"
+                          alt="Startup Builder"
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
+                        <div className="space-y-2 text-left">
+                          <h3 className={`font-display font-bold text-base leading-snug group-hover:text-emerald-400 transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                            Startup Builder
+                          </h3>
+                          <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            Persiapkan dan bangun startup-mu dari ide, validasi, hingga strategi growth yang berkelanjutan.
+                          </p>
+                        </div>
+                        
+                        {/* Specs */}
+                        <div className={`space-y-2.5 pt-2 text-xs border-t text-left ${isDarkMode ? "border-white/5 text-brand-muted" : "border-gray-200 text-gray-600"}`}>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>12 Modul</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>6 Minggu</span>
+                          </div>
+                          <div className="flex items-center gap-2.5">
+                            <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Sertifikat Inkubasi</span>
+                          </div>
+                        </div>
+
+                        <div className={`w-full py-2.5 text-xs text-center font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn ${
+                          isDarkMode
+                            ? "text-white border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20"
+                            : "text-emerald-600 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20"
+                        }`}>
+                          Learn more
+                          <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </div>
+                      </div>
+                    </Link>
+
+                  </div>
+                </div>
+              </section>
 
             {/* TESTIMONIAL CAROUSEL */}
             <section className="px-6 lg:px-16">
@@ -1467,10 +1932,15 @@ export default function Home() {
               </div>
             </section>
 
-          </div>
-        )}
-{activeTab === "kemitraan" && (
-          <div className="space-y-20 pb-24 text-white">
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "kemitraan" && (
+          <div className={`space-y-20 pb-24 transition-colors duration-300 ${
+            isDarkMode ? "bg-brand-dark text-white" : "bg-gray-50 text-gray-900"
+          }`}>
             
             {/* HERO SECTION */}
             <section className="relative pt-12 md:pt-16 px-6 lg:px-16 overflow-hidden">
@@ -1486,12 +1956,16 @@ export default function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                   {/* Text Content */}
                   <div className="lg:col-span-7 space-y-6 text-left">
-                    <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+                    <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${
+                      isDarkMode ? "text-white" : "text-gray-900"
+                    }`}>
                       Bersama, Menciptakan<br />
                       <span className="text-gradient">Dampak yang Lebih Luas</span>
                     </h1>
 
-                    <p className="text-brand-muted text-sm sm:text-base max-w-2xl leading-relaxed">
+                    <p className={`text-sm sm:text-base max-w-2xl leading-relaxed ${
+                      isDarkMode ? "text-brand-muted" : "text-gray-600"
+                    }`}>
                       Kayzen Academia membuka peluang kemitraan dengan berbagai pihak untuk menghadirkan program, event, dan inisiatif yang bermanfaat bagi pelajar, mahasiswa, dan komunitas akademik.
                     </p>
 
@@ -1504,10 +1978,14 @@ export default function Home() {
                         { num: "Seluruh Indonesia", label: "Jangkauan Nasional", isHighlight: true }
                       ].map((stat, i) => (
                         <div key={i} className="space-y-1">
-                          <div className={`font-display font-extrabold text-lg sm:text-xl ${stat.isHighlight ? "text-brand-primary" : "text-white"}`}>
+                          <div className={`font-display font-extrabold text-lg sm:text-xl ${
+                            stat.isHighlight ? "text-brand-primary" : (isDarkMode ? "text-white" : "text-gray-900")
+                          }`}>
                             {stat.num}
                           </div>
-                          <div className="text-[9px] uppercase tracking-wider text-brand-muted font-bold leading-tight">
+                          <div className={`text-[9px] uppercase tracking-wider font-bold leading-tight ${
+                            isDarkMode ? "text-brand-muted" : "text-gray-500"
+                          }`}>
                             {stat.label}
                           </div>
                         </div>
@@ -1518,7 +1996,9 @@ export default function Home() {
                   {/* Graphic Image */}
                   <div className="lg:col-span-5 relative w-full aspect-video sm:max-w-md lg:max-w-none mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/10 to-brand-purple/10 rounded-3xl blur-2xl opacity-50 pointer-events-none" />
-                    <div className="relative w-full h-full border border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-black/60 bg-brand-card">
+                    <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${
+                      isDarkMode ? "border-white/10 bg-brand-card shadow-black/60" : "border-gray-200 bg-white shadow-gray-200"
+                    }`}>
                       <Image
                         src="https://images.unsplash.com/photo-1516880711640-ef7db81be3e1?auto=format&fit=crop&w=800&q=80"
                         alt="Partnership handshake"
@@ -1532,17 +2012,19 @@ export default function Home() {
               </div>
             </section>
 
-            {/* PARTNERSHIP TYPES SECTION ("Sistem Kemitraan Kami") */}
+            {/* PARTNERSHIP TYPES SECTION */}
             <section className="px-6 lg:px-16">
               <div className="max-w-7xl mx-auto space-y-12">
                 <div className="text-center space-y-3">
-                  <h2 className="font-display text-3xl font-extrabold text-white">Sistem Kemitraan Kami</h2>
+                  <h2 className={`font-display text-3xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Sistem Kemitraan Kami</h2>
                   <div className="w-16 h-[3px] bg-gradient-brand mx-auto rounded-full" />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Card 1: Social Media Partnership */}
-                  <div className="glassmorphism-card rounded-3xl p-8 border border-white/5 hover:border-brand-primary/30 flex flex-col justify-between space-y-6 text-left">
+                  {/* Card 1 */}
+                  <div className={`rounded-3xl p-8 border flex flex-col justify-between space-y-6 text-left ${
+                    isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-primary/30" : "bg-white border-gray-200 shadow-md shadow-gray-200/50 hover:shadow-lg"
+                  }`}>
                     <div className="space-y-5">
                       <div className="w-14 h-14 rounded-full bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-lg shadow-brand-primary/10">
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1550,20 +2032,16 @@ export default function Home() {
                         </svg>
                       </div>
                       <div className="space-y-2.5">
-                        <h3 className="font-display font-extrabold text-white text-xl">Social Media Partnership</h3>
-                        <p className="text-xs text-brand-muted leading-relaxed">
+                        <h3 className={`font-display font-extrabold text-xl ${isDarkMode ? "text-white" : "text-gray-900"}`}>Social Media Partnership</h3>
+                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                           Bentuk kerja sama antara Kayzen Academia dengan universitas, organisasi, komunitas, atau penyelenggara program untuk memperluas jangkauan informasi dan meningkatkan exposure suatu program melalui media sosial.
-                        </p>
-                        <p className="text-xs text-brand-muted leading-relaxed">
-                          Dalam partnership ini, Kayzen Academia dapat membantu partner menjangkau audiens yang relevan, khususnya pelajar, mahasiswa, dan komunitas akademik, melalui berbagai aktivitas digital seperti publikasi di Instagram Feed, Stories, Reels, feed posts, dan bentuk promotional content lainnya.
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      {/* Cocok untuk */}
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Cocok untuk:</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-white" : "text-gray-800"}`}>Cocok untuk:</span>
                         <div className="flex flex-wrap gap-2">
                           {["Universitas", "Organisasi", "Komunitas", "Penyelenggara Program"].map((tag, i) => (
                             <span key={i} className="px-2.5 py-0.5 rounded-md text-[9px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
@@ -1573,9 +2051,8 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Benefit */}
-                      <div className="space-y-2 pt-2 border-t border-white/5">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Benefit untuk Partner:</span>
+                      <div className={`space-y-2 pt-2 border-t ${isDarkMode ? "border-white/5" : "border-gray-100"}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-white" : "text-gray-800"}`}>Benefit untuk Partner:</span>
                         <ul className="space-y-2">
                           {[
                             "Meningkatkan exposure dan jangkauan informasi program",
@@ -1583,7 +2060,7 @@ export default function Home() {
                             "Menjangkau audiens pelajar dan mahasiswa lebih luas",
                             "Kolaborasi yang fleksibel sesuai kebutuhan"
                           ].map((bf, i) => (
-                            <li key={i} className="flex items-center gap-2.5 text-xs text-brand-muted">
+                            <li key={i} className={`flex items-center gap-2.5 text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                               <svg className="w-4 h-4 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
@@ -1593,17 +2070,19 @@ export default function Home() {
                         </ul>
                       </div>
 
-                      <button className="w-full mt-4 py-3 text-xs text-center font-bold text-white border border-brand-primary/45 hover:bg-brand-primary/10 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn cursor-pointer">
+                      <button className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                        isDarkMode ? "text-white border-brand-primary/45 hover:bg-brand-primary/10" : "text-brand-primary border-brand-primary/40 bg-brand-primary/5 hover:bg-brand-primary/10"
+                      }`}>
                         Pelajari Lebih Lanjut
-                        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                       </button>
                     </div>
                   </div>
 
-                  {/* Card 2: Mentorship Partnership */}
-                  <div className="glassmorphism-card rounded-3xl p-8 border border-white/5 hover:border-brand-purple/30 flex flex-col justify-between space-y-6 text-left">
+                  {/* Card 2 */}
+                  <div className={`rounded-3xl p-8 border flex flex-col justify-between space-y-6 text-left ${
+                    isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/30" : "bg-white border-gray-200 shadow-md shadow-gray-200/50 hover:shadow-lg"
+                  }`}>
                     <div className="space-y-5">
                       <div className="w-14 h-14 rounded-full bg-brand-purple/10 border border-brand-purple/20 flex items-center justify-center text-brand-purple shadow-lg shadow-brand-purple/10">
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1611,17 +2090,16 @@ export default function Home() {
                         </svg>
                       </div>
                       <div className="space-y-2.5">
-                        <h3 className="font-display font-extrabold text-white text-xl">Mentorship Partnership</h3>
-                        <p className="text-xs text-brand-muted leading-relaxed">
-                          Bentuk kerja sama antara Kayzen Academia dengan universitas, organisasi, komunitas, atau penyelenggara program untuk menghadirkan program pendampingan yang membantu peserta mengembangkan kompetensi, menghasilkan karya yang lebih baik, dan mempersiapkan diri menghadapi tujuan akademik maupun kompetitif mereka.
+                        <h3 className={`font-display font-extrabold text-xl ${isDarkMode ? "text-white" : "text-gray-900"}`}>Mentorship Partnership</h3>
+                        <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
+                          Bentuk kerja sama antara Kayzen Academia dengan universitas, organisasi, komunitas, atau penyelenggara program untuk menghadirkan program pendampingan.
                         </p>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      {/* Cocok untuk */}
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Cocok untuk:</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-white" : "text-gray-800"}`}>Cocok untuk:</span>
                         <div className="flex flex-wrap gap-2">
                           {["Universitas", "Organisasi", "Komunitas", "Penyelenggara Program"].map((tag, i) => (
                             <span key={i} className="px-2.5 py-0.5 rounded-md text-[9px] font-bold bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
@@ -1631,9 +2109,8 @@ export default function Home() {
                         </div>
                       </div>
 
-                      {/* Benefit */}
-                      <div className="space-y-2 pt-2 border-t border-white/5">
-                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Benefit untuk Partner:</span>
+                      <div className={`space-y-2 pt-2 border-t ${isDarkMode ? "border-white/5" : "border-gray-100"}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-white" : "text-gray-800"}`}>Benefit untuk Partner:</span>
                         <ul className="space-y-2">
                           {[
                             "Program pendampingan berkualitas bersama mentor ahli",
@@ -1641,7 +2118,7 @@ export default function Home() {
                             "Hasil karya dan output yang lebih berdampak",
                             "Reputasi positif melalui program yang bernilai nyata"
                           ].map((bf, i) => (
-                            <li key={i} className="flex items-center gap-2.5 text-xs text-brand-muted">
+                            <li key={i} className={`flex items-center gap-2.5 text-xs ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                               <svg className="w-4 h-4 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
@@ -1651,11 +2128,11 @@ export default function Home() {
                         </ul>
                       </div>
 
-                      <button className="w-full mt-4 py-3 text-xs text-center font-bold text-white border border-brand-purple/45 hover:bg-brand-purple/10 rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn cursor-pointer">
+                      <button className={`w-full mt-4 py-3 text-xs text-center font-bold border rounded-xl transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer ${
+                        isDarkMode ? "text-white border-brand-purple/45 hover:bg-brand-purple/10" : "text-brand-purple border-brand-purple/40 bg-brand-purple/5 hover:bg-brand-purple/10"
+                      }`}>
                         Pelajari Lebih Lanjut
-                        <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                       </button>
                     </div>
                   </div>
@@ -1663,81 +2140,13 @@ export default function Home() {
               </div>
             </section>
 
-            {/* WHY PARTNER SECTION ("Mengapa Bermitra dengan Kayzen Academia?") */}
-            <section className="px-6 lg:px-16">
-              <div className="max-w-7xl mx-auto space-y-12">
-                <div className="text-center space-y-3">
-                  <h2 className="font-display text-2xl font-bold text-white">Mengapa Bermitra dengan Kayzen Academia?</h2>
-                  <div className="w-12 h-[3px] bg-gradient-brand mx-auto rounded-full" />
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                  {[
-                    {
-                      title: "Audiens Relevan",
-                      desc: "Menjangkau pelajar, mahasiswa, dan komunitas akademik yang aktif dan berpotensi.",
-                      icon: (
-                        <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 025.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      )
-                    },
-                    {
-                      title: "Konten Berkualitas",
-                      desc: "Konten kreatif, informatif, dan menarik yang meningkatkan nilai program Anda.",
-                      icon: (
-                        <svg className="w-5 h-5 text-brand-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                      )
-                    },
-                    {
-                      title: "Tim Profesional",
-                      desc: "Didukung oleh tim berpengalaman dalam komunikasi, edukasi, dan pengembangan program.",
-                      icon: (
-                        <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-                        </svg>
-                      )
-                    },
-                    {
-                      title: "Dampak Nyata",
-                      desc: "Program dan kolaborasi yang memberikan manfaat dan perubahan positif yang terukur.",
-                      icon: (
-                        <svg className="w-5 h-5 text-brand-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
-                        </svg>
-                      )
-                    },
-                    {
-                      title: "Kolaborasi Jangka Panjang",
-                      desc: "Membangun hubungan berkelanjutan untuk pertumbuhan bersama di masa depan.",
-                      icon: (
-                        <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                        </svg>
-                      )
-                    }
-                  ].map((val, i) => (
-                    <div key={i} className="bg-brand-card/20 border border-white/5 p-6 rounded-2xl text-center space-y-3.5 hover:bg-brand-card/45 hover:border-brand-primary/20 transition-all flex flex-col items-center justify-start">
-                      <div className="w-10 h-10 rounded-lg bg-white/[0.03] flex items-center justify-center border border-white/5">
-                        {val.icon}
-                      </div>
-                      <div className="space-y-1">
-                        <h4 className="font-semibold text-white text-xs">{val.title}</h4>
-                        <p className="text-[10px] text-brand-muted leading-relaxed">{val.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
 
             {/* COLLABORATION FLOW SECTION ("Alur Kolaborasi") */}
             <section className="px-6 lg:px-16">
               <div className="max-w-7xl mx-auto space-y-12">
                 <div className="text-center space-y-3">
-                  <h2 className="font-display text-3xl font-extrabold text-white">Alur Kolaborasi</h2>
+                  <h2 className={`font-display text-3xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Alur Kolaborasi</h2>
                   <div className="w-16 h-[3px] bg-gradient-brand mx-auto rounded-full" />
                 </div>
 
@@ -1793,24 +2202,246 @@ export default function Home() {
                     <div key={i} className="flex-1 flex flex-col items-center text-center space-y-3 relative group w-full max-w-[200px]">
                       {/* Connection arrow (except for last element) */}
                       {i < 4 && (
-                        <div className="hidden lg:block absolute top-6 -right-[50%] w-[100%] border-t-2 border-dashed border-white/10 z-0 group-hover:border-brand-primary/30 transition-colors" />
+                        <div className={`hidden lg:block absolute top-6 -right-[50%] w-[100%] border-t-2 border-dashed z-0 transition-colors ${
+                          isDarkMode ? "border-white/10 group-hover:border-brand-primary/30" : "border-gray-300 group-hover:border-brand-primary/40"
+                        }`} />
                       )}
                       
                       {/* Number circle icon */}
-                      <div className="w-12 h-12 rounded-full bg-brand-card border border-white/10 flex items-center justify-center text-white font-bold text-xs relative z-10 group-hover:border-brand-primary/50 group-hover:bg-brand-primary/5 transition-all shadow-md">
+                      <div className={`w-12 h-12 rounded-full border flex items-center justify-center font-bold text-xs relative z-10 transition-all shadow-md ${
+                        isDarkMode 
+                          ? "bg-brand-card border-white/10 text-white group-hover:border-brand-primary/50 group-hover:bg-brand-primary/5" 
+                          : "bg-white border-gray-200 text-gray-800 shadow-gray-200/60 group-hover:border-brand-primary group-hover:bg-blue-50/50"
+                      }`}>
                         {step.icon}
                       </div>
 
                       <div className="space-y-1 relative z-10 text-center">
-                        <h4 className="font-bold text-white text-xs leading-tight">
+                        <h4 className={`font-bold text-xs leading-tight ${
+                          isDarkMode ? "text-white" : "text-gray-900"
+                        }`}>
                           {step.num}
                         </h4>
-                        <p className="text-[10px] text-brand-muted leading-relaxed">
+                        <p className={`text-[10px] leading-relaxed ${
+                          isDarkMode ? "text-brand-muted" : "text-gray-600"
+                        }`}>
                           {step.desc}
                         </p>
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </section>
+
+            {/* COLLABORATED BRANDS ANIMATED MARQUEE SECTION */}
+            <section className="py-8 overflow-hidden relative">
+              <div className="max-w-7xl mx-auto px-6 lg:px-16 space-y-8 text-center">
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-purple">
+                    Mitra &amp; Kolaborator
+                  </span>
+                  <h3 className={`font-display text-xl sm:text-2xl font-bold ${
+                    isDarkMode ? "text-white" : "text-gray-900"
+                  }`}>
+                    Telah Berkolaborasi dengan 30+ Institusi &amp; Komunitas Terkemuka
+                  </h3>
+                </div>
+
+                {/* Marquee Wrapper with edge fade overlay */}
+                <div className="relative w-full overflow-hidden pause-on-hover py-4">
+                  {/* Left gradient shadow mask */}
+                  <div className={`absolute top-0 bottom-0 left-0 w-24 sm:w-40 z-10 pointer-events-none ${
+                    isDarkMode 
+                      ? "bg-gradient-to-r from-brand-dark via-brand-dark/80 to-transparent" 
+                      : "bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent"
+                  }`} />
+                  
+                  {/* Right gradient shadow mask */}
+                  <div className={`absolute top-0 bottom-0 right-0 w-24 sm:w-40 z-10 pointer-events-none ${
+                    isDarkMode 
+                      ? "bg-gradient-to-l from-brand-dark via-brand-dark/80 to-transparent" 
+                      : "bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent"
+                  }`} />
+
+                  {/* Marquee track - GUARANTEED PURE VECTOR SVG BRAND LOGOS */}
+                  <div className="animate-marquee-left flex gap-12 sm:gap-16 items-center">
+                    {[
+                      {
+                        name: "Google",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 15.96 0 12.48 0 5.8 0 0 5.8 0 12.48s5.8 12.48 12.48 12.48c3.6 0 6.64-1.187 8.88-3.52 2.32-2.32 3.04-5.56 3.04-8.16 0-.8-.08-1.547-.2-2.36H12.48z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Microsoft",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M0 0h11.379v11.379H0zM12.621 0H24v11.379H12.621zM0 12.621h11.379V24H0zM12.621 12.621H24V24H12.621z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Meta",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M24 11.6c-1.3-2.6-3.6-4.4-6.5-4.4-4.4 0-7.8 3.5-7.8 7.8 0 2.9 1.6 5.4 4 6.7 1.2.6 2.5.9 3.8.9 2.9 0 5.2-1.8 6.5-4.4 1.3 2.6 3.6 4.4 6.5 4.4 4.4 0 7.8-3.5 7.8-7.8 0-2.9-1.6-5.4-4-6.7-1.2-.6-2.5-.9-3.8-.9-2.9 0-5.2 1.8-6.5 4.4zm-6.5 8c-2.4 0-4.3-1.9-4.3-4.3s1.9-4.3 4.3-4.3c2.4 0 4.3 1.9 4.3 4.3s-1.9 4.3-4.3 4.3zm13 0c-2.4 0-4.3-1.9-4.3-4.3s1.9-4.3 4.3-4.3c2.4 0 4.3 1.9 4.3 4.3s-1.9 4.3-4.3 4.3z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Amazon",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M13.92 10.02c-1.84 0-3.32.74-3.32 2.62 0 1.68 1.1 2.36 2.44 2.36 1.1 0 2.06-.52 2.66-1.36v1.18h2.08V8.66h-2.08v1.36zm-1.12 3.42c-.74 0-1.44-.32-1.44-1.16 0-.96.88-1.26 1.76-1.26.46 0 .9.08 1.28.24v.94c-.44.78-1.04 1.24-1.6 1.24zM1.84 17.8c5.44 3.74 13.12 3.74 18.56 0 .34-.24.08-.54-.26-.34-4.8 2.82-12.72 2.82-17.52 0-.34-.2-.6.1-.78.34zM22.5 15.8c.2-.28.1-.56-.16-.48-1.18.36-2.52.48-3.76.24-.26-.06-.32.18-.08.34 1.18.8 2.64 1.04 4 0z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Figma",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12 12A4 4 0 1 1 16 8a4 4 0 0 1-4 4Zm0 0a4 4 0 1 1-4-4 4 4 0 0 1 4 4Zm0 0v4a4 4 0 1 1-4-4h4Zm4-8A4 4 0 1 0 12 8a4 4 0 0 0 4-4ZM8 0a4 4 0 1 0 4 4A4 4 0 0 0 8 0Z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Notion",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l11.734-.7c.42-.047.886-.42.886-.887 0-.7-.466-1.12-1.307-1.027l-13.6.84c-.84.047-1.167.56-1.167 1.027 0 .56.28.98 1.026 1.281zm.607 2.802v13.535c0 .933.42 1.493 1.447 1.493l1.867-.094V8.408L5.066 7.01zm4.854 14.887l10.828-.607c.887-.047 1.213-.607 1.213-1.447V6.541l-2.893 2.194v11.714l-9.148.514V8.782l-2.094.14v13.882zm10.781-1.074V7.521l1.727-1.28v12.28c0 .84-.374 1.307-1.727 1.493z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Slack",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "GitHub",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Spotify",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.899 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.019zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.18-1.2-.18-1.38-.72-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.62.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Intel",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M6.634 16.536H4.218V8.673h2.416v7.863zm-1.208-9.07c-.805 0-1.41-.605-1.41-1.41 0-.806.605-1.41 1.41-1.41.806 0 1.41.604 1.41 1.41 0 .805-.604 1.41-1.41 1.41zm9.87 9.07h-2.416V12.18c0-1.208-.403-1.813-1.41-1.813-.805 0-1.41.605-1.41 1.612v4.557H7.644V8.673h2.417v1.208c.604-.805 1.611-1.41 2.82-1.41 2.215 0 3.625 1.41 3.625 3.827v4.238zm6.043 0h-2.417V8.673h2.417v7.863z"/>
+                          </svg>
+                        )
+                      }
+                    ].concat([
+                      {
+                        name: "Google",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 15.96 0 12.48 0 5.8 0 0 5.8 0 12.48s5.8 12.48 12.48 12.48c3.6 0 6.64-1.187 8.88-3.52 2.32-2.32 3.04-5.56 3.04-8.16 0-.8-.08-1.547-.2-2.36H12.48z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Microsoft",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M0 0h11.379v11.379H0zM12.621 0H24v11.379H12.621zM0 12.621h11.379V24H0zM12.621 12.621H24V24H12.621z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Meta",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M24 11.6c-1.3-2.6-3.6-4.4-6.5-4.4-4.4 0-7.8 3.5-7.8 7.8 0 2.9 1.6 5.4 4 6.7 1.2.6 2.5.9 3.8.9 2.9 0 5.2-1.8 6.5-4.4 1.3 2.6 3.6 4.4 6.5 4.4 4.4 0 7.8-3.5 7.8-7.8 0-2.9-1.6-5.4-4-6.7-1.2-.6-2.5-.9-3.8-.9-2.9 0-5.2 1.8-6.5 4.4zm-6.5 8c-2.4 0-4.3-1.9-4.3-4.3s1.9-4.3 4.3-4.3c2.4 0 4.3 1.9 4.3 4.3s-1.9 4.3-4.3 4.3zm13 0c-2.4 0-4.3-1.9-4.3-4.3s1.9-4.3 4.3-4.3c2.4 0 4.3 1.9 4.3 4.3s-1.9 4.3-4.3 4.3z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Amazon",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M13.92 10.02c-1.84 0-3.32.74-3.32 2.62 0 1.68 1.1 2.36 2.44 2.36 1.1 0 2.06-.52 2.66-1.36v1.18h2.08V8.66h-2.08v1.36zm-1.12 3.42c-.74 0-1.44-.32-1.44-1.16 0-.96.88-1.26 1.76-1.26.46 0 .9.08 1.28.24v.94c-.44.78-1.04 1.24-1.6 1.24zM1.84 17.8c5.44 3.74 13.12 3.74 18.56 0 .34-.24.08-.54-.26-.34-4.8 2.82-12.72 2.82-17.52 0-.34-.2-.6.1-.78.34zM22.5 15.8c.2-.28.1-.56-.16-.48-1.18.36-2.52.48-3.76.24-.26-.06-.32.18-.08.34 1.18.8 2.64 1.04 4 0z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Figma",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12 12A4 4 0 1 1 16 8a4 4 0 0 1-4 4Zm0 0a4 4 0 1 1-4-4 4 4 0 0 1 4 4Zm0 0v4a4 4 0 1 1-4-4h4Zm4-8A4 4 0 1 0 12 8a4 4 0 0 0 4-4ZM8 0a4 4 0 1 0 4 4A4 4 0 0 0 8 0Z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Notion",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l11.734-.7c.42-.047.886-.42.886-.887 0-.7-.466-1.12-1.307-1.027l-13.6.84c-.84.047-1.167.56-1.167 1.027 0 .56.28.98 1.026 1.281zm.607 2.802v13.535c0 .933.42 1.493 1.447 1.493l1.867-.094V8.408L5.066 7.01zm4.854 14.887l10.828-.607c.887-.047 1.213-.607 1.213-1.447V6.541l-2.893 2.194v11.714l-9.148.514V8.782l-2.094.14v13.882zm10.781-1.074V7.521l1.727-1.28v12.28c0 .84-.374 1.307-1.727 1.493z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Slack",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "GitHub",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Spotify",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.899 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.019zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.18-1.2-.18-1.38-.72-.18-.6.18-1.2.72-1.38 4.26-1.26 11.28-1.02 15.721 1.62.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                          </svg>
+                        )
+                      },
+                      {
+                        name: "Intel",
+                        svg: (
+                          <svg className="h-7 sm:h-9 w-auto fill-current" viewBox="0 0 24 24">
+                            <path d="M6.634 16.536H4.218V8.673h2.416v7.863zm-1.208-9.07c-.805 0-1.41-.605-1.41-1.41 0-.806.605-1.41 1.41-1.41.806 0 1.41.604 1.41 1.41 0 .805-.604 1.41-1.41 1.41zm9.87 9.07h-2.416V12.18c0-1.208-.403-1.813-1.41-1.813-.805 0-1.41.605-1.41 1.612v4.557H7.644V8.673h2.417v1.208c.604-.805 1.611-1.41 2.82-1.41 2.215 0 3.625 1.41 3.625 3.827v4.238zm6.043 0h-2.417V8.673h2.417v7.863z"/>
+                          </svg>
+                        )
+                      }
+                    ]).map((brand, i) => (
+                      <div 
+                        key={i} 
+                        className={`flex items-center justify-center transition-all flex-shrink-0 cursor-pointer opacity-60 hover:opacity-100 hover:scale-115 p-3 rounded-2xl ${
+                          isDarkMode 
+                            ? "text-white/90 hover:text-white hover:bg-white/[0.06]" 
+                            : "text-gray-800 hover:text-gray-900 hover:bg-gray-200/60"
+                        }`}
+                        title={brand.name}
+                      >
+                        {brand.svg}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </section>
@@ -1846,7 +2477,9 @@ export default function Home() {
           </div>
         )}
 {activeTab === "info-lomba" && (
-          <div className="space-y-20 pb-24 text-white">
+          <div className={`space-y-20 pb-24 transition-colors duration-300 ${
+            isDarkMode ? "bg-brand-dark text-white" : "bg-gray-50 text-gray-900"
+          }`}>
             
             {/* HERO SECTION */}
             <section className="relative pt-12 md:pt-16 px-6 lg:px-16 overflow-hidden">
@@ -1854,24 +2487,25 @@ export default function Home() {
               <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
 
               <div className="max-w-7xl mx-auto">
-                {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs font-semibold text-brand-purple uppercase tracking-wider mb-6">
-                  <span className="cursor-pointer hover:text-white" onClick={() => handleTabChange("beranda")}>Info Lomba</span>
+                  <span className="cursor-pointer hover:underline" onClick={() => handleTabChange("beranda")}>Info Lomba</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                  {/* Text Content */}
                   <div className="lg:col-span-7 space-y-6 text-left">
-                    <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
+                    <h1 className={`font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight ${
+                      isDarkMode ? "text-white" : "text-gray-900"
+                    }`}>
                       Temukan Lomba Terbaik,<br />
                       Wujudkan <span className="text-gradient">Ide Jadi Prestasi</span>
                     </h1>
 
-                    <p className="text-brand-muted text-sm sm:text-base max-w-2xl leading-relaxed">
+                    <p className={`text-sm sm:text-base max-w-2xl leading-relaxed ${
+                      isDarkMode ? "text-brand-muted" : "text-gray-600"
+                    }`}>
                       Dapatkan informasi lomba terbaru untuk pelajar dan mahasiswa di berbagai bidang. Pilih lomba yang sesuai dengan minatmu, kembangkan potensimu, dan raih pencapaian terbaik.
                     </p>
 
-                    {/* Stats horizontal bar */}
                     <div className="grid grid-cols-3 gap-6 pt-4 max-w-lg">
                       {[
                         { num: "200+", title: "Lomba Aktif", desc: "Diperbarui setiap minggu" },
@@ -1880,24 +2514,19 @@ export default function Home() {
                       ].map((stat, i) => (
                         <div key={i} className="space-y-1">
                           <div className="font-display font-extrabold text-2xl text-gradient">{stat.num}</div>
-                          <div className="text-[10px] font-bold text-white uppercase tracking-wider">{stat.title}</div>
-                          <p className="text-[9px] text-brand-muted leading-tight">{stat.desc}</p>
+                          <div className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-white" : "text-gray-800"}`}>{stat.title}</div>
+                          <p className={`text-[9px] leading-tight ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>{stat.desc}</p>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  {/* Graphic Image */}
                   <div className="lg:col-span-5 relative w-full aspect-video sm:max-w-md lg:max-w-none mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/10 to-brand-purple/10 rounded-3xl blur-2xl opacity-50 pointer-events-none" />
-                    <div className="relative w-full h-full border border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-black/60 bg-brand-card">
-                      <Image
-                        src="/hero_students.png"
-                        alt="Students celebrating with trophy"
-                        fill
-                        priority
-                        className="object-cover"
-                      />
+                    <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${
+                      isDarkMode ? "border-white/10 bg-brand-card shadow-black/60" : "border-gray-200 bg-white shadow-gray-200"
+                    }`}>
+                      <Image src="/hero_students.png" alt="Students celebrating with trophy" fill priority className="object-cover" />
                     </div>
                   </div>
                 </div>
@@ -1908,10 +2537,11 @@ export default function Home() {
             <section className="px-6 lg:px-16">
               <div className="max-w-7xl mx-auto space-y-8">
                 
-                {/* Section Header with Search Bar */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b border-white/5 pb-6">
+                <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-6 border-b pb-6 ${
+                  isDarkMode ? "border-white/5" : "border-gray-200"
+                }`}>
                   <div className="space-y-1 text-left">
-                    <h2 className="font-display text-2xl font-bold text-white">Kategori Lomba</h2>
+                    <h2 className={`font-display text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Kategori Lomba</h2>
                   </div>
                   {/* Search Bar */}
                   <div className="relative max-w-md w-full">
@@ -1920,9 +2550,13 @@ export default function Home() {
                       placeholder="Cari lomba atau kata kunci..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-brand-card border border-white/10 px-4 py-3 pl-11 rounded-xl text-white text-xs focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 transition-all placeholder-brand-muted"
+                      className={`w-full px-4 py-3 pl-11 rounded-xl text-xs focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary/30 transition-all ${
+                        isDarkMode 
+                          ? "bg-brand-card border border-white/10 text-white placeholder-brand-muted" 
+                          : "bg-white border border-gray-300 text-gray-900 placeholder-gray-400 shadow-sm"
+                      }`}
                     />
-                    <svg className="w-4 h-4 text-brand-muted absolute left-4 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className={`w-4 h-4 absolute left-4 top-3.5 ${isDarkMode ? "text-brand-muted" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
@@ -1936,11 +2570,11 @@ export default function Home() {
                       onClick={() => setActiveCategory(cat.name)}
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all cursor-pointer ${
                         activeCategory === cat.name
-                          ? "bg-brand-primary/10 border-brand-primary text-brand-primary font-bold shadow-lg shadow-brand-primary/10 scale-[1.03]"
-                          : "bg-brand-card/30 border-white/5 text-brand-muted hover:text-white hover:bg-brand-card/50 hover:border-white/10"
+                          ? "bg-brand-primary/10 border-brand-primary text-brand-primary font-bold shadow-lg scale-[1.03]"
+                          : (isDarkMode ? "bg-brand-card/30 border-white/5 text-brand-muted hover:text-white" : "bg-white border-gray-200 text-gray-600 hover:text-gray-900 hover:bg-gray-50 shadow-sm")
                       }`}
                     >
-                      <div className={`p-2.5 rounded-lg mb-2.5 ${activeCategory === cat.name ? "bg-brand-primary text-white" : "bg-white/[0.03]"}`}>
+                      <div className={`p-2.5 rounded-lg mb-2.5 ${activeCategory === cat.name ? "bg-brand-primary text-white" : (isDarkMode ? "bg-white/[0.03]" : "bg-gray-100")}`}>
                         {cat.icon}
                       </div>
                       <span className="text-[10px] font-semibold tracking-wide leading-tight">{cat.name}</span>
@@ -1951,40 +2585,44 @@ export default function Home() {
                 {/* Secondary Dropdown Filters */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                   <div className="flex flex-wrap items-center gap-3">
-                    {/* Tingkat Dropdown */}
                     <div className="flex flex-col gap-1 text-left">
-                      <span className="text-[9px] uppercase tracking-wider text-brand-muted font-bold">Tingkat</span>
-                      <select value={filterTingkat} onChange={(e) => setFilterTingkat(e.target.value)} className="bg-brand-card border border-white/5 px-3 py-2 rounded-lg text-xs text-white focus:outline-none focus:border-brand-primary">
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Tingkat</span>
+                      <select value={filterTingkat} onChange={(e) => setFilterTingkat(e.target.value)} className={`px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-brand-primary ${
+                        isDarkMode ? "bg-brand-card border border-white/5 text-white" : "bg-white border border-gray-300 text-gray-800 shadow-sm"
+                      }`}>
                         <option>Semua Tingkat</option>
                         <option>Nasional</option>
                         <option>Internasional</option>
                       </select>
                     </div>
 
-                    {/* Status Dropdown */}
                     <div className="flex flex-col gap-1 text-left">
-                      <span className="text-[9px] uppercase tracking-wider text-brand-muted font-bold">Status</span>
-                      <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="bg-brand-card border border-white/5 px-3 py-2 rounded-lg text-xs text-white focus:outline-none focus:border-brand-primary">
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Status</span>
+                      <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className={`px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-brand-primary ${
+                        isDarkMode ? "bg-brand-card border border-white/5 text-white" : "bg-white border border-gray-300 text-gray-800 shadow-sm"
+                      }`}>
                         <option>Semua Status</option>
                         <option>Pendaftaran Dibuka</option>
                         <option>Segera Ditutup</option>
                       </select>
                     </div>
 
-                    {/* Batas Pendaftaran Dropdown */}
                     <div className="flex flex-col gap-1 text-left">
-                      <span className="text-[9px] uppercase tracking-wider text-brand-muted font-bold">Batas Pendaftaran</span>
-                      <select value={filterBatas} onChange={(e) => setFilterBatas(e.target.value)} className="bg-brand-card border border-white/5 px-3 py-2 rounded-lg text-xs text-white focus:outline-none focus:border-brand-primary">
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Batas Pendaftaran</span>
+                      <select value={filterBatas} onChange={(e) => setFilterBatas(e.target.value)} className={`px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-brand-primary ${
+                        isDarkMode ? "bg-brand-card border border-white/5 text-white" : "bg-white border border-gray-300 text-gray-800 shadow-sm"
+                      }`}>
                         <option>Semua Waktu</option>
                         <option>Bulan Ini</option>
                         <option>Bulan Depan</option>
                       </select>
                     </div>
 
-                    {/* Jenis Peserta Dropdown */}
                     <div className="flex flex-col gap-1 text-left">
-                      <span className="text-[9px] uppercase tracking-wider text-brand-muted font-bold">Jenis Peserta</span>
-                      <select value={filterPeserta} onChange={(e) => setFilterPeserta(e.target.value)} className="bg-brand-card border border-white/5 px-3 py-2 rounded-lg text-xs text-white focus:outline-none focus:border-brand-primary">
+                      <span className={`text-[9px] uppercase tracking-wider font-bold ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Jenis Peserta</span>
+                      <select value={filterPeserta} onChange={(e) => setFilterPeserta(e.target.value)} className={`px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-brand-primary ${
+                        isDarkMode ? "bg-brand-card border border-white/5 text-white" : "bg-white border border-gray-300 text-gray-800 shadow-sm"
+                      }`}>
                         <option>Semua</option>
                         <option>Pelajar</option>
                         <option>Mahasiswa</option>
@@ -1992,10 +2630,11 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Urutkan Dropdown */}
                   <div className="flex flex-col gap-1 text-left">
-                    <span className="text-[9px] uppercase tracking-wider text-brand-muted font-bold">Urutkan</span>
-                    <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className="bg-brand-card border border-white/5 px-3 py-2 rounded-lg text-xs text-white focus:outline-none focus:border-brand-primary">
+                    <span className={`text-[9px] uppercase tracking-wider font-bold ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Urutkan</span>
+                    <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className={`px-3 py-2 rounded-lg text-xs focus:outline-none focus:border-brand-primary ${
+                      isDarkMode ? "bg-brand-card border border-white/5 text-white" : "bg-white border border-gray-300 text-gray-800 shadow-sm"
+                    }`}>
                       <option>Terbaru</option>
                       <option>Batas Paling Dekat</option>
                       <option>Hadiah Terbesar</option>
@@ -2011,10 +2650,10 @@ export default function Home() {
               <div className="max-w-7xl mx-auto space-y-8">
                 
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-xl font-bold text-white text-left">Lomba Terbaru</h3>
+                  <h3 className={`font-display text-xl font-bold text-left ${isDarkMode ? "text-white" : "text-gray-900"}`}>Lomba Terbaru</h3>
                   <a href="#" className="text-xs font-semibold text-brand-purple hover:underline flex items-center gap-1.5 group">
                     Lihat Semua Lomba
-                    <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </a>
@@ -2024,7 +2663,15 @@ export default function Home() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {filteredContests.length > 0 ? (
                     filteredContests.map((c, i) => (
-                      <div key={i} className="glassmorphism-card rounded-2xl overflow-hidden flex flex-col group border border-white/5">
+                      <div 
+                        key={i} 
+                        onClick={() => setSelectedContest(c)}
+                        className={`rounded-2xl overflow-hidden flex flex-col group border transition-all cursor-pointer ${
+                          isDarkMode 
+                            ? "glassmorphism-card border-white/5 hover:border-brand-purple/40 hover:-translate-y-1" 
+                            : "bg-white border-gray-200 shadow-md shadow-gray-200/50 hover:shadow-xl hover:border-brand-purple/40 hover:-translate-y-1"
+                        }`}
+                      >
                         <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
                           <span className={`absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider ${c.statusColor}`}>
                             {c.status}
@@ -2039,48 +2686,68 @@ export default function Home() {
                         <div className="p-5 flex-grow flex flex-col justify-between space-y-4">
                           <div className="space-y-2 text-left">
                             <span className="text-[10px] font-bold text-brand-purple tracking-wide">{c.level}</span>
-                            <h4 className="font-display font-bold text-white text-sm leading-snug group-hover:text-brand-purple transition-colors min-h-[40px]">
+                            <h4 className={`font-display font-bold text-sm leading-snug group-hover:text-brand-purple transition-colors min-h-[40px] ${
+                              isDarkMode ? "text-white" : "text-gray-900"
+                            }`}>
                               {c.title}
                             </h4>
-                            <p className="text-[11px] text-brand-muted leading-relaxed line-clamp-3">
+                            <p className={`text-[11px] leading-relaxed line-clamp-3 ${
+                              isDarkMode ? "text-brand-muted" : "text-gray-600"
+                            }`}>
                               {c.description}
                             </p>
                           </div>
 
                           {/* Specifics */}
-                          <div className="space-y-2 pt-3 text-[11px] border-t border-white/5 text-left">
-                            <div className="flex items-center gap-2 text-brand-muted">
+                          <div className={`space-y-2 pt-3 text-[11px] border-t text-left ${
+                            isDarkMode ? "border-white/5" : "border-gray-100"
+                          }`}>
+                            <div className={`flex items-center gap-2 ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
+                              <svg className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className={`font-semibold ${isDarkMode ? "text-emerald-400" : "text-emerald-600"}`}>Biaya Daftar: {c.fee || "Gratis"}</span>
+                            </div>
+                            <div className={`flex items-center gap-2 ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                               <svg className="w-3.5 h-3.5 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
                               <span>Batas Daftar: {c.deadline}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-brand-muted">
+                            <div className={`flex items-center gap-2 ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                               <svg className="w-3.5 h-3.5 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
                               <span>{c.target}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-brand-muted">
+                            <div className={`flex items-center gap-2 ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
                               <svg className="w-3.5 h-3.5 text-brand-purple flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                               </svg>
-                              <span className="font-semibold text-white">Total Hadiah: {c.prize}</span>
+                              <span className={`font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Total Hadiah: {c.prize}</span>
                             </div>
                           </div>
 
-                          {/* Tags & Action Button */}
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="flex gap-1.5">
+                          {/* Tags Pills & Action Button */}
+                          <div className="space-y-3 pt-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
                               {c.tags.map((tag, idx) => (
-                                <span key={idx} className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/[0.04] text-brand-muted border border-white/5">
-                                  {tag}
+                                <span key={idx} className={`px-2.5 py-0.5 rounded-md text-[9px] font-bold whitespace-nowrap border ${
+                                  isDarkMode ? "bg-white/[0.06] text-brand-muted border-white/5" : "bg-purple-50 text-brand-purple border-purple-100"
+                                }`}>
+                                  #{tag}
                                 </span>
                               ))}
                             </div>
-                            <button className="px-3.5 py-1.5 rounded-lg border border-brand-purple/40 text-[10px] font-bold text-white hover:bg-brand-purple/10 transition-all inline-flex items-center gap-1 group/btn cursor-pointer">
-                              Learn more
-                              <svg className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedContest(c);
+                              }}
+                              className="w-full py-2.5 rounded-xl bg-brand-purple text-white text-xs font-bold hover:bg-brand-purple/90 transition-all flex items-center justify-center gap-1.5 shadow-md cursor-pointer"
+                            >
+                              Daftar Sekarang
+                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                               </svg>
                             </button>
@@ -2090,7 +2757,7 @@ export default function Home() {
                     ))
                   ) : (
                     <div className="col-span-4 py-16 text-center space-y-3">
-                      <p className="text-brand-muted text-sm">Tidak ada info lomba yang cocok dengan kategori atau kata kunci tersebut.</p>
+                      <p className={`text-sm ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Tidak ada info lomba yang cocok dengan kategori atau kata kunci tersebut.</p>
                       <button onClick={() => { setSearchQuery(""); setActiveCategory("Semua"); }} className="px-4 py-2 bg-brand-primary text-white text-xs font-semibold rounded-lg hover:bg-blue-600">Reset Filter</button>
                     </div>
                   )}
@@ -2103,7 +2770,7 @@ export default function Home() {
             <section className="px-6 lg:px-16">
               <div className="max-w-7xl mx-auto space-y-12">
                 <div className="text-center space-y-3">
-                  <h2 className="font-display text-3xl font-extrabold text-white">Tips Memilih Lomba yang Tepat</h2>
+                  <h2 className={`font-display text-3xl font-extrabold ${isDarkMode ? "text-white" : "text-gray-900"}`}>Tips Memilih Lomba yang Tepat</h2>
                   <div className="w-16 h-[3px] bg-gradient-brand mx-auto rounded-full" />
                 </div>
 
@@ -2146,13 +2813,17 @@ export default function Home() {
                       )
                     }
                   ].map((tip, i) => (
-                    <div key={i} className="bg-brand-card/20 border border-white/5 p-6 rounded-2xl space-y-4 hover:bg-brand-card/45 hover:border-brand-primary/20 transition-all text-left">
-                      <div className="w-12 h-12 rounded-xl bg-white/[0.03] flex items-center justify-center border border-white/5">
+                    <div key={i} className={`p-6 rounded-2xl border space-y-4 transition-all text-left ${
+                      isDarkMode ? "bg-brand-card/20 border-white/5 hover:bg-brand-card/45" : "bg-white border-gray-200 shadow-sm hover:shadow-md"
+                    }`}>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${
+                        isDarkMode ? "bg-white/[0.03] border-white/5" : "bg-gray-50 border-gray-200"
+                      }`}>
                         {tip.icon}
                       </div>
                       <div className="space-y-1.5">
-                        <h4 className="font-semibold text-white text-sm">{tip.title}</h4>
-                        <p className="text-[11px] text-brand-muted leading-relaxed">{tip.desc}</p>
+                        <h4 className={`font-semibold text-sm ${isDarkMode ? "text-white" : "text-gray-900"}`}>{tip.title}</h4>
+                        <p className={`text-[11px] leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>{tip.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -2208,13 +2879,13 @@ export default function Home() {
                   <h1 className={`font-display text-4xl sm:text-5xl font-extrabold leading-tight ${
                     isDarkMode ? "text-white" : "text-[#0e1726]"
                   }`}>
-                    Wawasan. Inspirasi. Inovasi.<br />
-                    <span className="text-gradient">Tanpa Batas.</span>
+                    Panduan & Wawasan<br />
+                    <span className="text-gradient">Kepenulisan & Inovasi</span>
                   </h1>
                   <p className={`text-xs sm:text-sm max-w-xl mx-auto leading-relaxed ${
                     isDarkMode ? "text-brand-muted" : "text-gray-500"
                   }`}>
-                    Temukan artikel seputar pendidikan, riset, pengembangan diri, kompetisi, dan inovasi untuk mendukung perjalanan belajarmu.
+                    Temukan artikel seputar teknik penulisan LKTI, esai nasional, proposal business plan, riset akademik, dan tips menjuarai kompetisi.
                   </p>
                 </div>
 
@@ -2228,8 +2899,8 @@ export default function Home() {
                   }`}>
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                       <Image
-                        src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=600&q=80"
-                        alt="5 Strategi Belajar"
+                        src="/kti_vector.png"
+                        alt="Kunci Bab Pendahuluan LKTI"
                         fill
                         className="object-cover group-hover:scale-103 transition-transform duration-500"
                       />
@@ -2238,7 +2909,7 @@ export default function Home() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Lifestyle</span>
+                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Karya Tulis Ilmiah</span>
                             <span>•</span>
                             <span>12 Mei 2024</span>
                           </div>
@@ -2247,19 +2918,19 @@ export default function Home() {
                         <h3 className={`font-display font-bold text-sm leading-snug group-hover:text-brand-purple transition-colors ${
                           isDarkMode ? "text-white" : "text-gray-800"
                         }`}>
-                          5 Strategi Belajar Efektif untuk Mahasiswa
+                          5 Kunci Utama Menulis Bab Pendahuluan LKTI yang Memikat Dewan Juri
                         </h3>
                         <p className={`text-[11px] leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Tips praktis untuk meningkatkan fokus, manajemen waktu, dan produktivitas.
+                          Tips praktis merumuskan latar belakang masalah, urgensi riset, dan rumusan masalah yang tajam.
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100/10">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full relative overflow-hidden bg-gray-100">
-                            <Image src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="Jane Cooper" fill className="object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Ghifari H." fill className="object-cover" />
                           </div>
-                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Jane Cooper</span>
+                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Ghifari Haidar</span>
                         </div>
                         <span className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-brand-purple group-hover:text-white transition-colors">
                           &rarr;
@@ -2276,8 +2947,8 @@ export default function Home() {
                   }`}>
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                       <Image
-                        src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80"
-                        alt="Peran AI"
+                        src="/essay_vector.png"
+                        alt="Panduan Hook Esai"
                         fill
                         className="object-cover group-hover:scale-103 transition-transform duration-500"
                       />
@@ -2286,28 +2957,28 @@ export default function Home() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100">Riset & Inovasi</span>
+                            <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100">Esai</span>
                             <span>•</span>
-                            <span>8 Mei 2024</span>
+                            <span>10 Mei 2024</span>
                           </div>
                           <span>5 min read</span>
                         </div>
                         <h3 className={`font-display font-bold text-sm leading-snug group-hover:text-brand-purple transition-colors ${
                           isDarkMode ? "text-white" : "text-gray-800"
                         }`}>
-                          Peran AI dalam Mengubah Cara Kita Belajar dan Berinovasi
+                          Panduan Menyusun Hook & Argumentasi Tajam dalam Esai Nasional
                         </h3>
                         <p className={`text-[11px] leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          AI bukan hanya tentang teknologi, tapi tentang bagaimana kita memanfaatkannya untuk menciptakan solusi.
+                          Cara menyusun gagasan yang terstruktur, persuasif, dan didukung data empiris aktual.
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100/10">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full relative overflow-hidden bg-gray-100">
-                            <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Alif D." fill className="object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="Nabilah A." fill className="object-cover" />
                           </div>
-                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Alif D. Saputra</span>
+                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Nabilah Azzahra</span>
                         </div>
                         <span className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-brand-purple group-hover:text-white transition-colors">
                           &rarr;
@@ -2324,8 +2995,8 @@ export default function Home() {
                   }`}>
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                       <Image
-                        src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&w=600&q=80"
-                        alt="Skill yang Dibutuhkan"
+                        src="/bisnis_vector.png"
+                        alt="Pitch Deck Business Plan"
                         fill
                         className="object-cover group-hover:scale-103 transition-transform duration-500"
                       />
@@ -2334,28 +3005,28 @@ export default function Home() {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-[10px] font-bold text-gray-400">
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Karier</span>
+                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Business Plan</span>
                             <span>•</span>
-                            <span>5 Mei 2024</span>
+                            <span>8 Mei 2024</span>
                           </div>
-                          <span>4 min read</span>
+                          <span>7 min read</span>
                         </div>
                         <h3 className={`font-display font-bold text-sm leading-snug group-hover:text-brand-purple transition-colors ${
                           isDarkMode ? "text-white" : "text-gray-800"
                         }`}>
-                          Skill yang Dibutuhkan di Dunia Kerja 2024
+                          Pitch Deck & Financial Model: Struktur Proposal Business Plan
                         </h3>
                         <p className={`text-[11px] leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Daftar skill penting yang harus kamu kuasai untuk siap menghadapi dunia kerja.
+                          Langkah merancang analisis pasar, proyeksi keuangan 3 tahun, dan strategi go-to-market.
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100/10">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full relative overflow-hidden bg-gray-100">
-                            <Image src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Dinda S." fill className="object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="Raihan P." fill className="object-cover" />
                           </div>
-                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Dinda Safitri</span>
+                          <span className={`font-semibold text-[10px] ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>Raihan Putra</span>
                         </div>
                         <span className="w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-brand-purple group-hover:text-white transition-colors">
                           &rarr;
@@ -2373,7 +3044,7 @@ export default function Home() {
               <div className={`max-w-7xl mx-auto flex items-center gap-3 overflow-x-auto pb-4 border-b ${
                 isDarkMode ? "border-white/5" : "border-gray-100"
               }`}>
-                {["Semua", "Edukasi", "Riset & Inovasi", "Karier", "Kompetisi", "Pengembangan Diri", "Technology"].map((cat, i) => (
+                {["Semua", "Karya Tulis Ilmiah", "Esai", "Business Plan", "Teknologi & AI", "Riset & Metodologi", "Tips Lomba"].map((cat, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveBlogCategory(cat)}
@@ -2405,49 +3076,49 @@ export default function Home() {
                   }`}>
                     <div className="relative aspect-[21/9] w-full bg-gray-100 overflow-hidden">
                       <Image
-                        src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=1000&q=80"
-                        alt="Canvas & Couture"
+                        src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80"
+                        alt="Panduan Komprehensif Lolos Pendanaan & Juara LKTI"
                         fill
                         className="object-cover group-hover:scale-102 transition-transform duration-700"
                       />
                     </div>
                     <div className="p-6 space-y-4">
                       <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
-                        <span className="px-2.5 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100">Fashion</span>
+                        <span className="px-2.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Karya Tulis Ilmiah</span>
                         <span>•</span>
                         <span>12 Mei 2024</span>
                         <span>•</span>
-                        <span>6 min read</span>
+                        <span>8 min read</span>
                       </div>
 
                       <div className="space-y-2">
                         <h3 className={`font-display font-extrabold text-xl leading-snug group-hover:text-brand-purple transition-colors ${
                           isDarkMode ? "text-white" : "text-gray-800"
                         }`}>
-                          Canvas & Couture: Art-Inspired Runways 2025
+                          Panduan Komprehensif Lolos Pendanaan & Juara LKTI Tingkat Nasional 2024
                         </h3>
                         <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
-                          Menggali tren fashion terkini yang terinspirasi dari seni kontemporer dan kreativitas tanpa batas. Temukan bagaimana para desainer terkemuka mengintegrasikan elemen visual lukisan ke dalam mahakarya busana mereka.
+                          Pelajari metodologi penelitian kuantitatif/kualitatif, penulisan sitasi akademik yang benar menggunakan Mendeley, hingga tips presentasi memukau di hadapan dewan penguji.
                         </p>
                       </div>
 
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100/10 text-xs">
                         <div className="flex items-center gap-2.5">
                           <div className="w-8 h-8 rounded-full relative overflow-hidden bg-gray-100">
-                            <Image src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="Ellena Rose" fill className="object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Ghifari Haidar" fill className="object-cover" />
                           </div>
                           <div>
-                            <h4 className={`font-bold ${isDarkMode ? "text-white" : "text-gray-700"}`}>Ellena Rose</h4>
-                            <p className="text-[10px] text-gray-400">Penulis Seni & Mode</p>
+                            <h4 className={`font-bold ${isDarkMode ? "text-white" : "text-gray-700"}`}>Ghifari Haidar</h4>
+                            <p className="text-[10px] text-gray-400">Founder Kayzen Academia</p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-4 text-gray-400 font-medium text-[11px]">
                           <span className="flex items-center gap-1">
-                            💬 18
+                            💬 24
                           </span>
                           <span className="flex items-center gap-1">
-                            👁️ 162
+                            👁️ 340
                           </span>
                         </div>
                       </div>
@@ -2458,34 +3129,34 @@ export default function Home() {
                   <div className="space-y-6">
                     {[
                       {
-                        title: "Palette & Pattern: Art's Role in Fashion",
-                        tag: "Art",
+                        title: "Cara Efektif Review Literatur & Penggunaan Reference Manager (Mendeley/Zotero)",
+                        tag: "Riset & Metodologi",
                         tagBg: "bg-blue-50 text-blue-600 border-blue-100",
                         date: "10 Mei 2024",
                         read: "5 min read",
-                        comments: 98,
-                        views: 162,
-                        image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=400&q=80"
+                        comments: 15,
+                        views: 210,
+                        image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80"
                       },
                       {
-                        title: "Panduan Lengkap Mengikuti Kompetisi Nasional",
-                        tag: "Kompetisi",
+                        title: "Manajemen Waktu & Strategi Pembagian Peran Tim Lomba Mahasiswa",
+                        tag: "Tips Lomba",
                         tagBg: "bg-amber-50 text-amber-600 border-amber-100",
                         date: "9 Mei 2024",
                         read: "4 min read",
-                        comments: 98,
-                        views: 162,
+                        comments: 19,
+                        views: 185,
                         image: "/lomba_inovasi.png"
                       },
                       {
-                        title: "Mindset Juara: Kunci Konsistensi dan Disiplin",
-                        tag: "Pengembangan Diri",
+                        title: "Mindset Juara: Mengatasi Writer's Block saat Menyusun Executive Summary",
+                        tag: "Esai",
                         tagBg: "bg-purple-50 text-purple-600 border-purple-100",
                         date: "7 Mei 2024",
                         read: "4 min read",
-                        comments: 98,
-                        views: 162,
-                        image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=400&q=80"
+                        comments: 12,
+                        views: 140,
+                        image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80"
                       }
                     ].map((item, i) => (
                       <div key={i} className={`border p-4 rounded-2xl flex gap-4 sm:gap-6 items-center group transition-all text-left ${
@@ -2526,8 +3197,8 @@ export default function Home() {
                     }`}>
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                         <Image
-                          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=400&q=80"
-                          alt="Gallery to Garment"
+                          src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=400&q=80"
+                          alt="Checklist Validasi Ide Inovasi"
                           fill
                           className="object-cover group-hover:scale-103 transition-transform"
                         />
@@ -2535,14 +3206,14 @@ export default function Home() {
                       <div className="p-5 space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400">
-                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Lifestyle</span>
+                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100">Karya Tulis Ilmiah</span>
                             <span>•</span>
                             <span>6 Mei 2024</span>
                           </div>
                           <h4 className={`font-display font-bold text-xs sm:text-sm group-hover:text-brand-purple transition-colors leading-snug ${
                             isDarkMode ? "text-white" : "text-gray-800"
                           }`}>
-                            Gallery to Garment: Art Meets Design
+                            Checklist Validasi Ide Inovasi Sebelum Submit File Lomba
                           </h4>
                         </div>
                       </div>
@@ -2554,8 +3225,8 @@ export default function Home() {
                     }`}>
                       <div className="relative aspect-[16/10] w-full overflow-hidden bg-gray-100">
                         <Image
-                          src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"
-                          alt="Sustainable Eating"
+                          src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=400&q=80"
+                          alt="Tips Wawancara Finalis"
                           fill
                           className="object-cover group-hover:scale-103 transition-transform"
                         />
@@ -2563,14 +3234,14 @@ export default function Home() {
                       <div className="p-5 space-y-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400">
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Health</span>
+                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100">Tips Lomba</span>
                             <span>•</span>
                             <span>5 Mei 2024</span>
                           </div>
                           <h4 className={`font-display font-bold text-xs sm:text-sm group-hover:text-brand-purple transition-colors leading-snug ${
                             isDarkMode ? "text-white" : "text-gray-800"
                           }`}>
-                            Sustainable Eating in a Climate-Conscious World
+                            Tips Wawancara Finalis & Presentasi Slide Deck yang Interaktif
                           </h4>
                         </div>
                       </div>
@@ -2594,13 +3265,12 @@ export default function Home() {
                     <ul className="space-y-1">
                       {[
                         { name: "Semua Artikel", count: 48 },
-                        { name: "Edukasi", count: 12 },
-                        { name: "Riset & Inovasi", count: 10 },
-                        { name: "Karier", count: 9 },
-                        { name: "Kompetisi", count: 9 },
-                        { name: "Pengembangan Diri", count: 7 },
-                        { name: "Technology", count: 6 },
-                        { name: "Lifestyle", count: 5 }
+                        { name: "Karya Tulis Ilmiah", count: 18 },
+                        { name: "Esai", count: 14 },
+                        { name: "Business Plan", count: 9 },
+                        { name: "Teknologi & AI", count: 8 },
+                        { name: "Riset & Metodologi", count: 7 },
+                        { name: "Tips Lomba", count: 5 }
                       ].map((item, i) => (
                         <li key={i}>
                           <button
@@ -2704,24 +3374,30 @@ export default function Home() {
         {activeTab === "tentang-kami" && (
           <div className="space-y-0">
             
-            {/* HERO SECTION (DARK BLUE/BLACK BG AS PER MOCKUP) */}
-            <section className="relative pt-12 pb-16 px-6 lg:px-16 bg-[#080b16] text-white overflow-hidden border-b border-white/5">
+            {/* HERO SECTION */}
+            <section className={`relative pt-12 pb-16 px-6 lg:px-16 overflow-hidden border-b transition-colors duration-300 ${
+              isDarkMode ? "bg-[#080b16] text-white border-white/5" : "bg-gradient-to-b from-purple-50/60 via-white to-gray-50 text-gray-900 border-gray-200"
+            }`}>
               <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-brand-primary/10 rounded-full blur-[120px] pointer-events-none" />
               <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
 
               <div className="max-w-7xl mx-auto space-y-12 relative z-10">
                 {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-xs font-semibold text-brand-muted uppercase tracking-wider text-left">
-                  <span className="cursor-pointer hover:text-white transition-colors" onClick={() => handleTabChange("beranda")}>Beranda</span>
-                  <span className="text-gray-500">&gt;</span>
-                  <span className="text-white">Tentang Kami</span>
+                <div className={`flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-left ${
+                  isDarkMode ? "text-brand-muted" : "text-gray-500"
+                }`}>
+                  <span className="cursor-pointer hover:underline transition-colors" onClick={() => handleTabChange("beranda")}>Beranda</span>
+                  <span>&gt;</span>
+                  <span className={isDarkMode ? "text-white" : "text-gray-900"}>Tentang Kami</span>
                 </div>
 
                 {/* Hero Main Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                   {/* Left Column: Title & Text */}
                   <div className="lg:col-span-7 space-y-6 text-left">
-                    <h1 className="font-display text-4xl sm:text-5xl font-extrabold leading-tight text-white">
+                    <h1 className={`font-display text-4xl sm:text-5xl font-extrabold leading-tight ${
+                      isDarkMode ? "text-white" : "text-gray-900"
+                    }`}>
                       Tentang <br />
                       <span className="text-gradient">Kayzen Academia</span>
                     </h1>
@@ -2730,7 +3406,9 @@ export default function Home() {
                       Mendorong ide, menulis ilmiah, dan menciptakan inovasi untuk perubahan nyata.
                     </p>
 
-                    <p className="text-xs sm:text-sm leading-relaxed text-brand-muted max-w-xl">
+                    <p className={`text-xs sm:text-sm leading-relaxed max-w-xl ${
+                      isDarkMode ? "text-brand-muted" : "text-gray-600"
+                    }`}>
                       Kayzen Academia adalah platform pembelajaran yang berfokus pada pengembangan keterampilan kepenulisan ilmiah, riset, dan inovasi bagi pelajar dan mahasiswa di seluruh Indonesia. Kami percaya, setiap ide yang ditulis dengan baik dapat menjadi awal dari solusi untuk tantangan dunia nyata.
                     </p>
                   </div>
@@ -2738,7 +3416,9 @@ export default function Home() {
                   {/* Right Column: Visual Image */}
                   <div className="lg:col-span-5 relative w-full aspect-[4/3] sm:max-w-md lg:max-w-none mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-tr from-brand-primary/20 to-brand-purple/20 rounded-3xl blur-2xl opacity-50 pointer-events-none" />
-                    <div className="relative w-full h-full border border-white/10 rounded-3xl overflow-hidden shadow-2xl bg-brand-card">
+                    <div className={`relative w-full h-full border rounded-3xl overflow-hidden shadow-2xl ${
+                      isDarkMode ? "border-white/10 bg-brand-card shadow-black/60" : "border-gray-200 bg-white shadow-gray-200"
+                    }`}>
                       <Image
                         src="/hero_students.png"
                         alt="Kayzen Academia Students holding trophy"
@@ -2751,7 +3431,9 @@ export default function Home() {
                 </div>
 
                 {/* Stats Row inside Hero */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 rounded-2xl border border-white/5 bg-[#0e1224]/50 backdrop-blur-md">
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 rounded-2xl border backdrop-blur-md ${
+                  isDarkMode ? "border-white/5 bg-[#0e1224]/50" : "border-gray-200 bg-white shadow-md shadow-gray-200/50"
+                }`}>
                   {[
                     {
                       num: "2K+",
@@ -2795,13 +3477,15 @@ export default function Home() {
                     }
                   ].map((hl, i) => (
                     <div key={i} className="flex gap-4 p-3 text-left">
-                      <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/[0.04] border border-white/5 flex items-center justify-center">
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-xl border flex items-center justify-center ${
+                        isDarkMode ? "bg-white/[0.04] border-white/5" : "bg-purple-50/60 border-purple-100"
+                      }`}>
                         {hl.icon}
                       </div>
                       <div className="space-y-0.5">
-                        <div className="font-display font-extrabold text-lg text-white">{hl.num}</div>
-                        <h4 className="font-bold text-xs text-white">{hl.title}</h4>
-                        <p className="text-[10px] leading-relaxed text-brand-muted">{hl.desc}</p>
+                        <div className={`font-display font-extrabold text-lg ${isDarkMode ? "text-white" : "text-gray-900"}`}>{hl.num}</div>
+                        <h4 className={`font-bold text-xs ${isDarkMode ? "text-white" : "text-gray-900"}`}>{hl.title}</h4>
+                        <p className={`text-[10px] leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>{hl.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -3154,6 +3838,163 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* CONTEST DETAIL MODAL DIALOG */}
+      {selectedContest && (
+        <div 
+          onClick={() => setSelectedContest(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-md animate-modal-backdrop cursor-pointer"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 border shadow-2xl animate-modal-content cursor-default ${
+              isDarkMode ? "bg-[#090c19] border-white/10 text-white" : "bg-white border-gray-200 text-gray-900"
+            }`}
+          >
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedContest(null)}
+              className={`absolute top-6 right-6 p-2 rounded-full border transition-all cursor-pointer z-10 ${
+                isDarkMode ? "bg-white/5 border-white/10 hover:bg-white/10 text-white" : "bg-gray-100 border-gray-200 hover:bg-gray-200 text-gray-700"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Header Info */}
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <div className="relative w-full sm:w-52 aspect-[4/3] rounded-2xl overflow-hidden flex-shrink-0 border border-white/10 shadow-md">
+                <Image src={selectedContest.image} alt={selectedContest.title} fill className="object-cover" />
+                <span className={`absolute top-2 left-2 px-2.5 py-1 rounded text-[9px] font-bold ${selectedContest.statusColor}`}>
+                  {selectedContest.status}
+                </span>
+              </div>
+              <div className="space-y-3 text-left flex-grow">
+                <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                  {selectedContest.level}
+                </span>
+                <h2 className="font-display text-2xl font-extrabold leading-snug">
+                  {selectedContest.title}
+                </h2>
+                <p className={`text-xs leading-relaxed ${isDarkMode ? "text-brand-muted" : "text-gray-600"}`}>
+                  {selectedContest.description}
+                </p>
+              </div>
+            </div>
+
+            {/* Grid Highlights */}
+            <div className={`grid grid-cols-2 sm:grid-cols-3 gap-4 my-6 p-4 rounded-2xl border text-left ${
+              isDarkMode ? "bg-white/[0.02] border-white/5" : "bg-purple-50/50 border-purple-100"
+            }`}>
+              <div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Batas Pendaftaran</span>
+                <span className="text-xs font-bold text-brand-purple">{selectedContest.deadline}</span>
+              </div>
+              <div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Sasaran Peserta</span>
+                <span className="text-xs font-bold">{selectedContest.target}</span>
+              </div>
+              <div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>Total Hadiah</span>
+                <span className="text-xs font-extrabold text-gradient">{selectedContest.prize}</span>
+              </div>
+            </div>
+
+            {/* Breakdown Details */}
+            <div className="space-y-6 text-left">
+              
+              {/* Hadiah Breakdown */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  🏆 Breakdown Hadiah &amp; Penghargaan
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-1 ${isDarkMode ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-200"}`}>
+                    <div className="font-bold text-amber-500">🥇 Juara 1 Utama</div>
+                    <p className={`text-[11px] ${isDarkMode ? "opacity-80" : "text-gray-600"}`}>Uang Tunai + Thropy + Sertifikat Juara 1 Nasional</p>
+                  </div>
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-1 ${isDarkMode ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-200"}`}>
+                    <div className="font-bold text-slate-400">🥈 Juara 2 Runner Up</div>
+                    <p className={`text-[11px] ${isDarkMode ? "opacity-80" : "text-gray-600"}`}>Uang Tunai + Thropy + Sertifikat Juara 2 Nasional</p>
+                  </div>
+                  <div className={`p-3.5 rounded-xl border text-xs space-y-1 ${isDarkMode ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-200"}`}>
+                    <div className="font-bold text-amber-700">🥉 Juara 3 Runner Up</div>
+                    <p className={`text-[11px] ${isDarkMode ? "opacity-80" : "text-gray-600"}`}>Uang Tunai + Thropy + Sertifikat Juara 3 Nasional</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  📅 Timeline &amp; Tahapan Lomba
+                </h3>
+                <ul className={`space-y-2.5 text-xs p-4 rounded-xl border ${isDarkMode ? "bg-white/5 border-white/5" : "bg-gray-50 border-gray-200"}`}>
+                  <li className="flex items-center justify-between">
+                    <span>Pendaftaran Early Bird &amp; Submisi Karya</span>
+                    <span className="font-bold text-brand-purple">1 Mei - 31 Mei 2024</span>
+                  </li>
+                  <li className={`flex items-center justify-between border-t pt-2 ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
+                    <span>Pendaftaran Gelombang Reguler</span>
+                    <span className="font-bold text-brand-purple">1 Juni - {selectedContest.deadline}</span>
+                  </li>
+                  <li className={`flex items-center justify-between border-t pt-2 ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
+                    <span>Penilaian Juri &amp; Pengumuman Finalis</span>
+                    <span className="font-bold">10 Juli - 18 Juli 2024</span>
+                  </li>
+                  <li className={`flex items-center justify-between border-t pt-2 ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
+                    <span>Awarding Night &amp; Pengumuman Pemenang</span>
+                    <span className="font-bold text-emerald-500">25 Juli 2024</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Ketentuan */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-sm flex items-center gap-2">
+                  📋 Ketentuan Umum Peserta
+                </h3>
+                <ul className={`list-disc list-inside text-xs space-y-1.5 p-4 rounded-xl border ${
+                  isDarkMode ? "bg-white/5 border-white/5 text-brand-muted" : "bg-gray-50 border-gray-200 text-gray-600"
+                }`}>
+                  <li>Terbuka untuk {selectedContest.target} aktif di seluruh Indonesia.</li>
+                  <li>Dapat diikuti secara Individu maupun Tim (Maksimal 3 Orang).</li>
+                  <li>Karya orisinal dan belum pernah memenangkan lomba sejenis sebelumnya.</li>
+                  <li>Keputusan dewan juri bersifat mutlak dan tidak dapat diganggu gugat.</li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* Action CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 mt-6 border-t border-gray-200/20">
+              <a 
+                href={selectedContest.link || "https://google.com"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:flex-1 py-3.5 px-6 rounded-xl font-bold text-xs text-white bg-gradient-brand shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2 cursor-pointer text-center"
+              >
+                Daftar Lomba Sekarang
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+              <button 
+                onClick={() => alert(`Mengunduh Guidebook PDF & Buku Panduan untuk "${selectedContest.title}"...`)}
+                className={`w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold text-xs border transition-all cursor-pointer ${
+                  isDarkMode ? "border-white/20 text-white hover:bg-white/10" : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Unduh Guidebook (PDF)
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
