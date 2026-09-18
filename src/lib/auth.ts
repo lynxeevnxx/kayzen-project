@@ -13,6 +13,11 @@ type DbUser = {
   avatar?: string | null;
 };
 
+const MASTER_ADMIN_EMAILS = [
+  "admin@kayzenacademia.com",
+  "tegardm@gmail.com",
+];
+
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   providers: [
@@ -57,19 +62,19 @@ export const authOptions: NextAuthOptions = {
         try {
           await initTables();
           const sb = getSupabase();
-          const { data: existing } = await sb.from("users").select("id, role").eq("email", user.email).limit(1);
+          const userEmail = user.email.toLowerCase();
+          const { data: existing } = await sb.from("users").select("id, role").eq("email", userEmail).limit(1);
+          
           if (!existing || existing.length === 0) {
-            // Google logins on this site are granted admin access by default
+            const role = MASTER_ADMIN_EMAILS.includes(userEmail) ? "admin" : "user";
             await sb.from("users").insert({
               id: `usr_g_${Date.now()}`,
               name: user.name || "Google User",
-              email: user.email,
+              email: userEmail,
               password: "GOOGLE_AUTH",
-              role: "admin",
+              role,
               avatar: user.image || "",
             });
-          } else if (existing[0].role !== "admin") {
-            await sb.from("users").update({ role: "admin" }).eq("email", user.email);
           }
         } catch (dbErr) {
           console.error("Google Auth DB sync warning:", dbErr);
@@ -80,25 +85,25 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role || "admin";
+        token.role = (user as { role?: string }).role || "user";
       }
       if (token.email) {
         try {
           const { data: users } = await getSupabase()
             .from("users")
             .select("id, role")
-            .eq("email", token.email)
+            .eq("email", token.email.toLowerCase())
             .limit(1);
           if (users?.[0]) {
             token.id = users[0].id;
-            token.role = users[0].role || "admin";
+            token.role = users[0].role || "user";
           }
         } catch (dbErr) {
           console.error("JWT DB role lookup warning:", dbErr);
         }
       }
       if (!token.role) {
-        token.role = "admin";
+        token.role = "user";
       }
       return token;
     },
