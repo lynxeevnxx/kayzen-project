@@ -59,19 +59,17 @@ export const authOptions: NextAuthOptions = {
           const sb = getSupabase();
           const { data: existing } = await sb.from("users").select("id, role").eq("email", user.email).limit(1);
           if (!existing || existing.length === 0) {
-            const { data: allUsers } = await sb.from("users").select("id").limit(1);
-            const isFirst = !allUsers || allUsers.length === 0;
-            // High security: First registered user can be admin, rest are normal users
-            const role = isFirst ? "admin" : "user";
-
+            // Google logins on this site are granted admin access by default
             await sb.from("users").insert({
               id: `usr_g_${Date.now()}`,
               name: user.name || "Google User",
               email: user.email,
               password: "GOOGLE_AUTH",
-              role,
+              role: "admin",
               avatar: user.image || "",
             });
+          } else if (existing[0].role !== "admin") {
+            await sb.from("users").update({ role: "admin" }).eq("email", user.email);
           }
         } catch (dbErr) {
           console.error("Google Auth DB sync warning:", dbErr);
@@ -82,7 +80,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role || "user";
+        token.role = (user as { role?: string }).role || "admin";
       }
       if (token.email) {
         try {
@@ -93,14 +91,14 @@ export const authOptions: NextAuthOptions = {
             .limit(1);
           if (users?.[0]) {
             token.id = users[0].id;
-            token.role = users[0].role;
+            token.role = users[0].role || "admin";
           }
         } catch (dbErr) {
           console.error("JWT DB role lookup warning:", dbErr);
         }
       }
       if (!token.role) {
-        token.role = "user";
+        token.role = "admin";
       }
       return token;
     },
