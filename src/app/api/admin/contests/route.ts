@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { query, initTables } from '@/lib/db';
+import { getSupabase, initTables } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
-    const contests = await query('SELECT * FROM contests ORDER BY created_at DESC');
-    return NextResponse.json({ success: true, contests });
+    const { data: contests, error } = await getSupabase().from('contests').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ success: true, contests: contests || [] });
   } catch (error: any) {
     console.error('GET Admin Contests Error:', error);
     return NextResponse.json({ message: 'Gagal mengambil data lomba' }, { status: 500 });
@@ -14,6 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { title, category, level, deadline, fee, image, description, guide_url, status } = body;
@@ -23,22 +27,12 @@ export async function POST(req: Request) {
     }
 
     const id = 'c_' + Date.now();
-    await query(
-      `INSERT INTO contests (id, title, category, level, deadline, fee, image, description, guide_url, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        title,
-        category || 'Lomba Umum',
-        level || 'Nasional',
-        deadline || '30 hari',
-        fee || 'Gratis',
-        image,
-        description || '',
-        guide_url || '',
-        status || 'open'
-      ]
-    );
+    const { error } = await getSupabase().from('contests').insert({
+      id, title, category: category || 'Lomba Umum', level: level || 'Nasional',
+      deadline: deadline || '30 hari', fee: fee || 'Gratis', image,
+      description: description || '', guide_url: guide_url || '', status: status || 'open'
+    });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Lomba baru berhasil ditambahkan', contestId: id });
   } catch (error: any) {
@@ -49,6 +43,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, title, category, level, deadline, fee, image, description, guide_url, status } = body;
@@ -57,12 +52,10 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: 'ID Lomba tidak ditemukan' }, { status: 400 });
     }
 
-    await query(
-      `UPDATE contests 
-       SET title = ?, category = ?, level = ?, deadline = ?, fee = ?, image = ?, description = ?, guide_url = ?, status = ? 
-       WHERE id = ?`,
-      [title, category, level, deadline, fee, image, description, guide_url, status, id]
-    );
+    const { error } = await getSupabase().from('contests').update({
+      title, category, level, deadline, fee, image, description, guide_url, status
+    }).eq('id', id);
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Data lomba berhasil diperbarui' });
   } catch (error: any) {
@@ -73,6 +66,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -81,7 +75,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'ID Lomba tidak ditemukan' }, { status: 400 });
     }
 
-    await query('DELETE FROM contests WHERE id = ?', [id]);
+    const { error } = await getSupabase().from('contests').delete().eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true, message: 'Lomba berhasil dihapus' });
   } catch (error: any) {
     console.error('DELETE Admin Contest Error:', error);

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { query, initTables } from '@/lib/db';
+import { getSupabase, initTables } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
-    const teamMembers = await query('SELECT * FROM team_members ORDER BY created_at DESC');
-    return NextResponse.json({ success: true, teamMembers });
+    const { data: teamMembers, error } = await getSupabase().from('team_members').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ success: true, teamMembers: teamMembers || [] });
   } catch (error: any) {
     console.error('GET Admin Team Error:', error);
     return NextResponse.json({ message: 'Gagal mengambil data tim mentor' }, { status: 500 });
@@ -14,6 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { name, role, description, avatar, status } = body;
@@ -23,19 +27,12 @@ export async function POST(req: Request) {
     }
 
     const id = 'tm_' + Date.now();
-
-    await query(
-      `INSERT INTO team_members (id, name, role, description, avatar, status) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        name,
-        role,
-        description || '',
-        avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-        status || 'active',
-      ]
-    );
+    const { error } = await getSupabase().from('team_members').insert({
+      id, name, role, description: description || '',
+      avatar: avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      status: status || 'active'
+    });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Anggota tim baru berhasil ditambahkan', memberId: id });
   } catch (error: any) {
@@ -46,6 +43,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, name, role, description, avatar, status } = body;
@@ -54,12 +52,10 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: 'ID Anggota Tim tidak ditemukan' }, { status: 400 });
     }
 
-    await query(
-      `UPDATE team_members 
-       SET name = ?, role = ?, description = ?, avatar = ?, status = ? 
-       WHERE id = ?`,
-      [name, role, description, avatar, status, id]
-    );
+    const { error } = await getSupabase().from('team_members').update({
+      name, role, description, avatar, status
+    }).eq('id', id);
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Data anggota tim berhasil diperbarui' });
   } catch (error: any) {
@@ -70,6 +66,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -78,7 +75,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'ID Anggota Tim tidak ditemukan' }, { status: 400 });
     }
 
-    await query('DELETE FROM team_members WHERE id = ?', [id]);
+    const { error } = await getSupabase().from('team_members').delete().eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true, message: 'Anggota tim berhasil dihapus' });
   } catch (error: any) {
     console.error('DELETE Admin Team Error:', error);

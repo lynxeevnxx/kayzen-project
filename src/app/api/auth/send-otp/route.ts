@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
-
-// Temporary memory store for OTP verification (in production stored in DB/Redis)
-export const otpStore = new Map<string, { code: string; expires: number }>();
+import { randomInt } from 'node:crypto';
+import { initTables, getSupabase } from '@/lib/db';
+import { hashOtp, normalizeEmail } from '@/lib/otp';
 
 export async function POST(req: Request) {
   try {
@@ -12,18 +12,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Alamat email tidak valid' }, { status: 400 });
     }
 
-    // Generate 6-digit OTP verification code
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + 10 * 60 * 1000; // 10 minutes expiry
+    const normalizedEmail = normalizeEmail(email);
 
-    otpStore.set(email.toLowerCase(), { code: otpCode, expires });
-
-    console.log(`[OTP GENERATED] Email: ${email} | Code: ${otpCode}`);
-
-    // If SMTP credentials exist (Hostinger Webmail / Gmail App Password)
-    const smtpHost = process.env.SMTP_HOST || 'smtp.hostinger.com';
+    const smtpHost = process.env.SMTP_HOST;
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
+    if (!smtpHost || !smtpUser || !smtpPass) {
+      return NextResponse.json({ message: 'Layanan email belum dikonfigurasi' }, { status: 503 });
+    }
+
+    await initTables();
+    const sb = getSupabase();
+    const { data: existing } = await sb.from('email_otps').select('created_at').eq('email', normalizedEmail).limit(1);
+    if (existing?.[0] && Date.now() - new Date(existing[0].created_at).getTime() < 60_000) {
+      return NextResponse.json({ message: 'Tunggu satu menit sebelum meminta kode baru' }, { status: 429 });
+    }
+
+    // Generate 6-digit OTP verification code
+    const otpCode = randomInt(100000, 1000000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+    // Upsert OTP record
+    await sb.from('email_otps').upsert({
+      email: normalizedEmail,
+      code_hash: hashOtp(normalizedEmail, otpCode),
+      expires_at: expiresAt,
+      attempts: 0,
+    }, { onConflict: 'email' });
+
     const smtpPort = Number(process.env.SMTP_PORT) || 465;
 
     if (smtpUser && smtpPass) {
@@ -40,7 +56,7 @@ export async function POST(req: Request) {
 
         await transporter.sendMail({
           from: `"Kayzen Academia" <${smtpUser}>`,
-          to: email,
+          to: normalizedEmail,
           subject: `${otpCode} adalah Kode Verifikasi OTP Kayzen Academia Anda`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; rounded: 12px;">
@@ -57,7 +73,7 @@ export async function POST(req: Request) {
             </div>
           `,
         });
-        console.log(`[SMTP] Verification email sent successfully to ${email}`);
+        console.log(`[SMTP] Verification email sent successfully to ${normalizedEmail}`);
       } catch (mailError) {
         console.error('[SMTP ERROR] Failed to send email via SMTP:', mailError);
       }
@@ -65,11 +81,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Kode verifikasi OTP (6 digit) telah dikirimkan ke email ${email}. Silakan cek Inbox atau folder Spam Anda.`,
+      message: `Kode verifikasi OTP (6 digit) telah dikirimkan ke email ${normalizedEmail}. Silakan cek Inbox atau folder Spam Anda.`,
     });
   } catch (error: any) {
     console.error('Send OTP Error:', error);
     return NextResponse.json({ message: 'Gagal mengirim kode verifikasi' }, { status: 500 });
   }
 }
-

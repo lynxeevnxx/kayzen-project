@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { query, initTables } from '@/lib/db';
+import { getSupabase, initTables } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
-    const testimonials = await query('SELECT * FROM testimonials ORDER BY created_at DESC');
-    return NextResponse.json({ success: true, testimonials });
+    const { data: testimonials, error } = await getSupabase().from('testimonials').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ success: true, testimonials: testimonials || [] });
   } catch (error: any) {
     console.error('GET Admin Testimonials Error:', error);
     return NextResponse.json({ message: 'Gagal mengambil data testimonial' }, { status: 500 });
@@ -14,6 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { quote, author, title, avatar, rating, status } = body;
@@ -23,20 +27,12 @@ export async function POST(req: Request) {
     }
 
     const id = 'testi_' + Date.now();
-
-    await query(
-      `INSERT INTO testimonials (id, quote, author, title, avatar, rating, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        quote,
-        author,
-        title || 'Alumni Kayzen Academia',
-        avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
-        rating || 5,
-        status || 'active',
-      ]
-    );
+    const { error } = await getSupabase().from('testimonials').insert({
+      id, quote, author, title: title || 'Alumni Kayzen Academia',
+      avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
+      rating: rating || 5, status: status || 'active'
+    });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Testimonial baru berhasil ditambahkan', testimonialId: id });
   } catch (error: any) {
@@ -47,6 +43,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, quote, author, title, avatar, rating, status } = body;
@@ -55,12 +52,10 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: 'ID Testimonial tidak ditemukan' }, { status: 400 });
     }
 
-    await query(
-      `UPDATE testimonials 
-       SET quote = ?, author = ?, title = ?, avatar = ?, rating = ?, status = ? 
-       WHERE id = ?`,
-      [quote, author, title, avatar, rating, status, id]
-    );
+    const { error } = await getSupabase().from('testimonials').update({
+      quote, author, title, avatar, rating, status
+    }).eq('id', id);
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Testimonial berhasil diperbarui' });
   } catch (error: any) {
@@ -71,6 +66,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -79,7 +75,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'ID Testimonial tidak ditemukan' }, { status: 400 });
     }
 
-    await query('DELETE FROM testimonials WHERE id = ?', [id]);
+    const { error } = await getSupabase().from('testimonials').delete().eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true, message: 'Testimonial berhasil dihapus' });
   } catch (error: any) {
     console.error('DELETE Admin Testimonial Error:', error);

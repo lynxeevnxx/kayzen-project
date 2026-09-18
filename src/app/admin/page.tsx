@@ -5,7 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
 
-type AdminTab = "dashboard" | "program" | "lomba" | "blog" | "registrations" | "testimonials" | "team" | "partners";
+type AdminTab =
+  | "dashboard"
+  | "registrations"
+  | "users"
+  | "program"
+  | "lomba"
+  | "blog"
+  | "testimonials"
+  | "team"
+  | "partners";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>("dashboard");
@@ -29,7 +38,7 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [cRes, prgRes, bRes, tstRes, tmRes, pRes, uRes] = await Promise.all([
+      const [cRes, prgRes, bRes, tstRes, tmRes, pRes, uRes, usrRes] = await Promise.all([
         fetch("/api/admin/contests"),
         fetch("/api/admin/programs"),
         fetch("/api/admin/blogs"),
@@ -37,6 +46,7 @@ export default function AdminPage() {
         fetch("/api/admin/team"),
         fetch("/api/admin/partners"),
         fetch("/api/admin/registrations"),
+        fetch("/api/admin/users"),
       ]);
 
       const cData = await cRes.json();
@@ -46,6 +56,7 @@ export default function AdminPage() {
       const tmData = await tmRes.json();
       const pData = await pRes.json();
       const uData = await uRes.json();
+      const usrData = await usrRes.json();
 
       if (cData.contests) setContests(cData.contests);
       if (prgData.programs) setPrograms(prgData.programs);
@@ -54,7 +65,8 @@ export default function AdminPage() {
       if (tmData.teamMembers) setTeamMembers(tmData.teamMembers);
       if (pData.partners) setPartners(pData.partners);
       if (uData.registrations) setRegistrations(uData.registrations);
-      if (uData.users) setUsers(uData.users);
+      if (usrData.users) setUsers(usrData.users);
+      else if (uData.users) setUsers(uData.users);
     } catch (err: any) {
       console.error("Fetch admin data error:", err);
     } finally {
@@ -144,6 +156,36 @@ export default function AdminPage() {
     }
   };
 
+  // User Handlers
+  const handleUpdateUserRole = async (id: string, newRole: string) => {
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, role: newRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showNotification(data.message || "Role pengguna berhasil diperbarui");
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message || "Gagal mengupdate role pengguna");
+    }
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus akun pengguna ini secara permanen?")) return;
+    try {
+      const res = await fetch(`/api/admin/users?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showNotification(data.message);
+      fetchAllData();
+    } catch (err: any) {
+      alert(err.message || "Gagal menghapus pengguna");
+    }
+  };
+
   // Status handler for Registration
   const handleUpdateRegStatus = async (id: string, newStatus: string) => {
     try {
@@ -183,7 +225,9 @@ export default function AdminPage() {
     const rows = registrations
       .map(
         (r) =>
-          `"${r.id}","${r.user_name || r.name || ''}","${r.user_email || r.email || ''}","${r.phone || ''}","${r.contest_title || r.title || ''}","${r.status || 'Pending'}","${r.created_at || ''}"`
+          `"${r.id}","${r.user_name || r.name || ""}","${r.user_email || r.email || ""}","${r.phone || ""}","${
+            r.contest_title || r.title || ""
+          }","${r.status || "Pending"}","${r.created_at || ""}"`
       )
       .join("\n");
 
@@ -197,10 +241,11 @@ export default function AdminPage() {
     document.body.removeChild(link);
   };
 
-  // Nav Items Definition (Cleaned - 0 Emojis)
+  // Nav Items Definition
   const navItems = [
     { id: "dashboard", label: "Dashboard Overview", badge: null },
     { id: "registrations", label: "Pendaftaran Peserta", badge: registrations.length },
+    { id: "users", label: "Pengguna & Hak Akses", badge: users.length },
     { id: "program", label: "Program & Bootcamp", badge: programs.length },
     { id: "lomba", label: "Info Lomba & Beasiswa", badge: contests.length },
     { id: "blog", label: "Blog & Artikel", badge: blogs.length },
@@ -579,6 +624,113 @@ export default function AdminPage() {
                               <tr>
                                 <td colSpan={5} className="py-8 text-center text-gray-400">
                                   Belum ada pendaftaran peserta.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ----------------- TAB: PENGGUNA & HAK AKSES ----------------- */}
+                {activeTab === "users" && (
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h2 className="text-xl font-bold">Pengguna & Hak Akses</h2>
+                        <p className="text-xs text-gray-400">Kelola akun terdaftar, peran pengguna, dan akses administrator</p>
+                      </div>
+
+                      <div className="text-xs text-brand-purple font-bold">
+                        Total {users.length} Akun Terdaftar
+                      </div>
+                    </div>
+
+                    {/* SEARCH FILTER */}
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Cari pengguna berdasarkan nama atau email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs outline-none ${
+                          isDarkMode ? "bg-brand-card border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+                        }`}
+                      />
+                    </div>
+
+                    {/* USERS TABLE */}
+                    <div className={`p-6 rounded-2xl border ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-slate-200 shadow-sm"}`}>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead className={`border-b ${isDarkMode ? "border-white/10 text-gray-400" : "border-slate-200 text-slate-500"}`}>
+                            <tr>
+                              <th className="py-3 px-3 font-bold">Pengguna</th>
+                              <th className="py-3 px-3 font-bold">Email</th>
+                              <th className="py-3 px-3 font-bold">Role / Hak Akses</th>
+                              <th className="py-3 px-3 font-bold">Tanggal Terdaftar</th>
+                              <th className="py-3 px-3 font-bold text-right">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {users
+                              .filter((u) => {
+                                const q = searchQuery.toLowerCase();
+                                return (
+                                  (u.name || "").toLowerCase().includes(q) ||
+                                  (u.email || "").toLowerCase().includes(q)
+                                );
+                              })
+                              .map((usr) => (
+                                <tr key={usr.id} className="hover:bg-white/5 transition-colors">
+                                  <td className="py-3.5 px-3">
+                                    <div className="flex items-center gap-2.5">
+                                      <div className="w-8 h-8 rounded-full bg-brand-purple/20 text-brand-purple flex items-center justify-center font-bold text-xs">
+                                        {(usr.name || "U")[0].toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <div className="font-bold text-sm">{usr.name || "User"}</div>
+                                        <div className="text-[10px] text-gray-400">ID: {usr.id}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="py-3.5 px-3 font-medium text-gray-300">
+                                    {usr.email}
+                                  </td>
+                                  <td className="py-3.5 px-3">
+                                    <select
+                                      value={usr.role || "user"}
+                                      onChange={(e) => handleUpdateUserRole(usr.id, e.target.value)}
+                                      className={`px-3 py-1 rounded-lg text-xs font-bold border outline-none cursor-pointer ${
+                                        usr.role === "admin"
+                                          ? "bg-purple-500/20 text-purple-400 border-purple-500/40"
+                                          : "bg-blue-500/20 text-blue-400 border-blue-500/30"
+                                      }`}
+                                    >
+                                      <option value="user" className="text-black">User (Peserta)</option>
+                                      <option value="admin" className="text-black">Admin (Pengelola)</option>
+                                    </select>
+                                  </td>
+                                  <td className="py-3.5 px-3 text-gray-400 text-[11px]">
+                                    {usr.created_at ? new Date(usr.created_at).toLocaleDateString("id-ID") : "-"}
+                                  </td>
+                                  <td className="py-3.5 px-3 text-right">
+                                    <button
+                                      onClick={() => handleDeleteUser(usr.id)}
+                                      className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/20 cursor-pointer"
+                                    >
+                                      Hapus Akun
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+
+                            {users.length === 0 && (
+                              <tr>
+                                <td colSpan={5} className="py-8 text-center text-gray-400">
+                                  Belum ada pengguna terdaftar.
                                 </td>
                               </tr>
                             )}

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { query, initTables } from '@/lib/db';
+import { getSupabase, initTables } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
-    const programs = await query('SELECT * FROM programs ORDER BY created_at DESC');
-    return NextResponse.json({ success: true, programs });
+    const { data: programs, error } = await getSupabase().from('programs').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ success: true, programs: programs || [] });
   } catch (error: any) {
     console.error('GET Admin Programs Error:', error);
     return NextResponse.json({ message: 'Gagal mengambil data program' }, { status: 500 });
@@ -14,6 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { title, category, price, mentor, image, description, link, status } = body;
@@ -25,22 +29,12 @@ export async function POST(req: Request) {
     const id = 'prg_' + Date.now();
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    await query(
-      `INSERT INTO programs (id, title, slug, category, price, mentor, image, description, link, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        title,
-        slug,
-        category || 'Bootcamp',
-        price || 'Gratis',
-        mentor || 'Tim Mentor Kayzen',
-        image,
-        description || '',
-        link || '',
-        status || 'active',
-      ]
-    );
+    const { error } = await getSupabase().from('programs').insert({
+      id, title, slug, category: category || 'Bootcamp', price: price || 'Gratis',
+      mentor: mentor || 'Tim Mentor Kayzen', image, description: description || '',
+      link: link || '', status: status || 'active'
+    });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Program baru berhasil ditambahkan', programId: id });
   } catch (error: any) {
@@ -51,6 +45,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, title, category, price, mentor, image, description, link, status } = body;
@@ -61,12 +56,10 @@ export async function PUT(req: Request) {
 
     const slug = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : undefined;
 
-    await query(
-      `UPDATE programs 
-       SET title = ?, slug = ?, category = ?, price = ?, mentor = ?, image = ?, description = ?, link = ?, status = ? 
-       WHERE id = ?`,
-      [title, slug, category, price, mentor, image, description, link, status, id]
-    );
+    const { error } = await getSupabase().from('programs').update({
+      title, slug, category, price, mentor, image, description, link, status
+    }).eq('id', id);
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Data program berhasil diperbarui' });
   } catch (error: any) {
@@ -77,6 +70,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -85,7 +79,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'ID Program tidak ditemukan' }, { status: 400 });
     }
 
-    await query('DELETE FROM programs WHERE id = ?', [id]);
+    const { error } = await getSupabase().from('programs').delete().eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true, message: 'Program berhasil dihapus' });
   } catch (error: any) {
     console.error('DELETE Admin Program Error:', error);

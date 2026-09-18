@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { query, initTables } from '@/lib/db';
+import { getSupabase, initTables } from '@/lib/db';
+import { getAdminSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
-    const blogs = await query('SELECT * FROM blogs ORDER BY created_at DESC');
-    return NextResponse.json({ success: true, blogs });
+    const { data: blogs, error } = await getSupabase().from('blogs').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return NextResponse.json({ success: true, blogs: blogs || [] });
   } catch (error: any) {
     console.error('GET Admin Blogs Error:', error);
     return NextResponse.json({ message: 'Gagal mengambil data artikel blog' }, { status: 500 });
@@ -14,6 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { title, category, author, image, excerpt, content, status } = body;
@@ -25,21 +29,12 @@ export async function POST(req: Request) {
     const id = 'b_' + Date.now();
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    await query(
-      `INSERT INTO blogs (id, title, slug, category, author, image, excerpt, content, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        title,
-        slug,
-        category || 'Artikel',
-        author || 'Tim Kayzen Academia',
-        image,
-        excerpt || '',
-        content || '',
-        status || 'published'
-      ]
-    );
+    const { error } = await getSupabase().from('blogs').insert({
+      id, title, slug, category: category || 'Artikel',
+      author: author || 'Tim Kayzen Academia', image,
+      excerpt: excerpt || '', content: content || '', status: status || 'published'
+    });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Artikel blog berhasil dipublikasikan', blogId: id });
   } catch (error: any) {
@@ -50,6 +45,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, title, category, author, image, excerpt, content, status } = body;
@@ -60,12 +56,10 @@ export async function PUT(req: Request) {
 
     const slug = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'artikel';
 
-    await query(
-      `UPDATE blogs 
-       SET title = ?, slug = ?, category = ?, author = ?, image = ?, excerpt = ?, content = ?, status = ? 
-       WHERE id = ?`,
-      [title, slug, category, author, image, excerpt, content, status, id]
-    );
+    const { error } = await getSupabase().from('blogs').update({
+      title, slug, category, author, image, excerpt, content, status
+    }).eq('id', id);
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Artikel blog berhasil diperbarui' });
   } catch (error: any) {
@@ -76,6 +70,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
@@ -84,7 +79,8 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ message: 'ID Artikel tidak ditemukan' }, { status: 400 });
     }
 
-    await query('DELETE FROM blogs WHERE id = ?', [id]);
+    const { error } = await getSupabase().from('blogs').delete().eq('id', id);
+    if (error) throw error;
     return NextResponse.json({ success: true, message: 'Artikel blog berhasil dihapus' });
   } catch (error: any) {
     console.error('DELETE Admin Blog Error:', error);

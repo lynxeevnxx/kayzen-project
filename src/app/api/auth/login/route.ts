@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { initTables, getSupabase } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
@@ -10,8 +10,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Email dan password wajib diisi' }, { status: 400 });
     }
 
+    await initTables();
+    const sb = getSupabase();
+
     // Find user by email
-    const users = (await query('SELECT * FROM users WHERE email = ?', [email])) as any[];
+    const { data: users } = await sb.from('users').select('*').eq('email', email).limit(1);
     if (!users || users.length === 0) {
       return NextResponse.json({ message: 'Email atau password salah' }, { status: 401 });
     }

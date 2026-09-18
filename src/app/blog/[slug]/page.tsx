@@ -39,7 +39,7 @@ export default function BlogDetailPage({ params }: { params: Promise<{ slug: str
     const fetchBlog = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/admin/blogs");
+        const res = await fetch("/api/content/blogs");
         const data = await res.json();
         if (data.blogs && data.blogs.length > 0) {
           const found = data.blogs.find((b: any) => b.slug === slug || b.id === slug);
