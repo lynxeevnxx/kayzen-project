@@ -44,6 +44,9 @@ export default function Header({ isDarkMode, setIsDarkMode, activeTab = "beranda
       }
     : localUser;
 
+  const userRole = (session?.user as { role?: string })?.role || localUser?.role;
+  const isAdmin = userRole === "admin";
+
   const handleLogout = () => {
     localStorage.removeItem("kayzen_user");
     setLocalUser(null);
@@ -160,13 +163,15 @@ export default function Header({ isDarkMode, setIsDarkMode, activeTab = "beranda
                     <p className="font-bold text-xs truncate">{activeUser.name}</p>
                     <p className="text-[10px] opacity-60 truncate">{activeUser.email}</p>
                   </div>
-                  <Link
-                    href="/admin"
-                    onClick={() => setShowUserDropdown(false)}
-                    className="block px-4 py-2 text-xs font-semibold text-brand-purple hover:bg-white/5 transition-colors"
-                  >
-                    ⚡ Admin Panel CMS
-                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="block px-4 py-2 text-xs font-semibold text-brand-purple hover:bg-white/5 transition-colors"
+                    >
+                      ⚡ Admin Panel CMS
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-xs font-semibold text-red-400 hover:bg-white/5 transition-colors cursor-pointer"
