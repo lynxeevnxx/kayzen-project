@@ -39,9 +39,12 @@ export default function ProgramListPage() {
     fetch("/api/content/programs")
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setPrograms(data);
-        }
+        const list = Array.isArray(data)
+          ? data
+          : data?.programs && Array.isArray(data.programs)
+          ? data.programs
+          : [];
+        setPrograms(list);
       })
       .catch((err) => console.error("Error fetching programs:", err))
       .finally(() => setLoading(false));

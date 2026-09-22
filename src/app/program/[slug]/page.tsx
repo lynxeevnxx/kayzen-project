@@ -31,7 +31,66 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
     }
   };
 
-  const program = programDetails[slug];
+  const [dbProgram, setDbProgram] = useState<any>(null);
+  const [loading, setLoading] = useState(!programDetails[slug]);
+
+  useEffect(() => {
+    if (programDetails[slug]) return;
+    fetch("/api/content/programs")
+      .then((res) => res.json())
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.programs || [];
+        const found = list.find((p: any) => p.slug === slug || p.id === slug);
+        if (found) {
+          setDbProgram({
+            id: found.id,
+            title: found.title,
+            badge: (found.category || "Bootcamp").toUpperCase(),
+            badgeColor: "bg-brand-purple text-white border-brand-purple/40",
+            tagline: found.description || "Program bootcamp komprehensif di Kayzen Academia.",
+            description: found.description || "Program intensif terstruktur bersama mentor ahli.",
+            price: found.price || "Gratis",
+            rating: 5.0,
+            reviewsCount: 1,
+            studentsCount: "10+",
+            duration: "4 Minggu",
+            modulesCount: "8 Modul",
+            certificate: true,
+            image: found.image || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
+            instructor: {
+              name: found.mentor || "Tim Mentor Kayzen",
+              role: "Mentor Expert",
+              avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+              bio: "Praktisi & mentor ahli di bidangnya."
+            },
+            benefits: [
+              "Akses Modul & Materi Pembelajaran HD",
+              "Sesi Mentoring & Bedah Proyek",
+              "Sertifikat Kelulusan Resmi Kayzen Academia"
+            ],
+            syllabus: [
+              { week: "Minggu 1", title: "Pengenalan & Kerangka Kerja", desc: "Pemahaman fundamental dan teori pendukung." },
+              { week: "Minggu 2-3", title: "Praktik & Pendampingan", desc: "Pengerjaan studi kasus dan bimbingan mentor." },
+              { week: "Minggu 4", title: "Review & Final Project", desc: "Evaluasi hasil karya dan pemberian sertifikat." }
+            ]
+          });
+        }
+      })
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
+  }, [slug]);
+
+  const program = programDetails[slug] || dbProgram;
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen flex flex-col items-center justify-center space-y-4 px-6 ${
+        isDarkMode ? "bg-brand-dark text-white" : "bg-gray-50 text-gray-900"
+      }`}>
+        <p className="text-sm font-semibold text-brand-muted">Memuat detail program...</p>
+      </div>
+    );
+  }
 
   if (!program) {
     return (

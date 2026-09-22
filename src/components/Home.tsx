@@ -416,13 +416,50 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
     link: c.guide_url || "https://google.com"
   }));
 
-  const teamMembers = dbTeam.map((t, idx) => ({
-    name: t.name,
-    role: t.role,
-    roleColor: idx % 2 === 0 ? "text-brand-primary" : "text-brand-purple",
-    desc: t.description || "",
-    avatar: t.avatar
-  }));
+  const defaultTeam = [
+    {
+      name: "Dr. Alamsyah Putra, M.Sc.",
+      role: "Chief Executive Officer & Founder",
+      roleColor: "text-brand-primary",
+      desc: "Peneliti & Akademisi di bidang Riset & Inovasi",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      name: "Dinda Salsabila, M.Sc.",
+      role: "Chief Academic Officer",
+      roleColor: "text-brand-purple",
+      desc: "Awardee LPDP & Head of Scientific Writing",
+      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+    },
+    {
+      name: "Muhammad Farhan, S.E.",
+      role: "Head of Business & Innovation",
+      roleColor: "text-brand-primary",
+      desc: "Startup Founder & Awardee Business Plan",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80"
+    }
+  ];
+
+  const teamMembers = dbTeam && dbTeam.length > 0
+    ? dbTeam.map((t, idx) => ({
+        name: t.name,
+        role: t.role,
+        roleColor: idx % 2 === 0 ? "text-brand-primary" : "text-brand-purple",
+        desc: t.description || "",
+        avatar: t.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+      }))
+    : defaultTeam;
+
+  const displayTestimonials = dbTestimonials && dbTestimonials.length > 0
+    ? Array.from({ length: Math.ceil(dbTestimonials.length / 3) }, (_, i) =>
+        dbTestimonials.slice(i * 3, i * 3 + 3).map((t) => ({
+          quote: `"${t.quote}"`,
+          author: t.author,
+          title: t.title,
+          avatar: t.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+        }))
+      )
+    : testimonials;
 
   // Dynamic filtering of contests
   const filteredContests = contests.filter((c) => {
@@ -1134,7 +1171,62 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
 
                   {/* Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    
+                    {dbPrograms && dbPrograms.length > 0 ? (
+                      dbPrograms.map((prog) => (
+                        <Link 
+                          key={prog.id}
+                          href={`/program/${prog.slug || prog.id}`}
+                          className={`rounded-2xl overflow-hidden flex flex-col group border cursor-pointer ${
+                            isDarkMode ? "glassmorphism-card border-white/5 hover:border-brand-purple/40" : "bg-white border-gray-100 shadow-sm"
+                          }`}
+                        >
+                          <div className="relative aspect-[4/3] w-full overflow-hidden bg-brand-card">
+                            <span className="absolute top-3 left-3 z-10 px-2.5 py-1 rounded-md text-[10px] font-bold bg-brand-purple text-white uppercase tracking-wider">
+                              {prog.category || "Bootcamp"}
+                            </span>
+                            <Image
+                              src={prog.image || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80"}
+                              alt={prog.title}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                          <div className="p-5 flex-grow flex flex-col justify-between space-y-5">
+                            <div className="space-y-2 text-left">
+                              <h3 className={`font-display font-bold text-base leading-snug group-hover:text-brand-purple transition-colors ${isDarkMode ? "text-white" : "text-gray-800"}`}>
+                                {prog.title}
+                              </h3>
+                              <p className={`text-xs leading-relaxed line-clamp-2 ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                                {prog.description || "Program bootcamp komprehensif."}
+                              </p>
+                            </div>
+                            
+                            <div className={`space-y-2.5 pt-2 text-xs border-t text-left ${isDarkMode ? "border-white/5 text-brand-muted" : "border-gray-200 text-gray-600"}`}>
+                              <div className="flex items-center gap-2.5">
+                                <span className="font-semibold text-brand-purple">Mentor:</span>
+                                <span>{prog.mentor || "Tim Mentor Kayzen"}</span>
+                              </div>
+                              <div className="flex items-center gap-2.5">
+                                <span className="font-semibold text-brand-purple">Harga:</span>
+                                <span className="font-bold text-emerald-400">{prog.price || "Gratis"}</span>
+                              </div>
+                            </div>
+
+                            <div className={`w-full py-2.5 text-xs text-center font-bold rounded-xl transition-all inline-flex items-center justify-center gap-1.5 group/btn ${
+                              isDarkMode
+                                ? "text-white border border-brand-purple/40 bg-brand-purple/10 hover:bg-brand-purple/20"
+                                : "text-brand-purple border border-brand-purple/30 bg-brand-purple/10 hover:bg-brand-purple/20"
+                            }`}>
+                              Lihat Detail Program
+                              <svg className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                              </svg>
+                            </div>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <>
                     {/* Essay Bootcamp */}
                     <Link 
                       href="/program/essay-bootcamp"
@@ -1380,7 +1472,8 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         </div>
                       </div>
                     </Link>
-
+                      </>
+                    )}
                   </div>
                 </div>
               </section>
@@ -1396,7 +1489,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                 {/* Box */}
                 <div className="flex items-center gap-4 relative">
                   <button 
-                    onClick={() => setActiveTestimonialPage(prev => (prev === 0 ? testimonials.length - 1 : prev - 1))}
+                    onClick={() => setActiveTestimonialPage(prev => (prev === 0 ? Math.max(0, displayTestimonials.length - 1) : prev - 1))}
                     className={`w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer active:scale-95 transition-all flex-shrink-0 ${
                       isDarkMode ? "border-white/10 text-white hover:bg-brand-primary/20 hover:border-brand-primary" : "border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300"
                     }`}
@@ -1407,7 +1500,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                   <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 w-full p-8 rounded-2xl border ${
                     isDarkMode ? "glassmorphism border-white/5" : "bg-white border-gray-100 shadow-sm"
                   }`}>
-                    {testimonials[activeTestimonialPage].map((t, idx) => (
+                    {(displayTestimonials[activeTestimonialPage] || displayTestimonials[0] || []).map((t: any, idx: number) => (
                       <div key={idx} className={`border p-6 rounded-2xl space-y-5 flex flex-col justify-between shadow-xl ${
                         isDarkMode ? "bg-brand-card/50 border-white/5 text-white" : "bg-gray-50/50 border-gray-100 text-gray-700"
                       }`}>
@@ -1428,7 +1521,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                   </div>
 
                   <button 
-                    onClick={() => setActiveTestimonialPage(prev => (prev === testimonials.length - 1 ? 0 : prev + 1))}
+                    onClick={() => setActiveTestimonialPage(prev => (prev >= displayTestimonials.length - 1 ? 0 : prev + 1))}
                     className={`w-10 h-10 rounded-full border flex items-center justify-center cursor-pointer active:scale-95 transition-all flex-shrink-0 ${
                       isDarkMode ? "border-white/10 text-white hover:bg-brand-primary/20 hover:border-brand-primary" : "border-gray-200 text-gray-700 hover:bg-gray-100 hover:border-gray-300"
                     }`}

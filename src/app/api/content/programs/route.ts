@@ -4,7 +4,11 @@ import { getSupabase, initTables } from "@/lib/db";
 export async function GET() {
   try {
     await initTables();
-    const { data: programs, error } = await getSupabase().from("programs").select("*").eq("status", "active").order("created_at", { ascending: false });
+    const { data: programs, error } = await getSupabase()
+      .from("programs")
+      .select("*")
+      .or("status.eq.active,status.is.null")
+      .order("created_at", { ascending: false });
     if (error) throw error;
     return NextResponse.json({ success: true, programs: programs || [] }, { headers: { "Cache-Control": "s-maxage=60, stale-while-revalidate=300" } });
   } catch (error) {
