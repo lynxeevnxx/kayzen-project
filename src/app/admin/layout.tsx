@@ -11,8 +11,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/masuk");
   }
 
-  // Jika bukan admin -> Paksa redirect ke beranda
-  if (role !== "admin") {
+  // Jika bukan admin dan bukan penulis -> Paksa redirect ke beranda
+  if (role !== "admin" && role !== "penulis") {
     redirect("/");
   }
 

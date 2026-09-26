@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
@@ -34,39 +35,64 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
 
-  // Load All Data from APIs
+  const { data: session } = useSession();
+  const [localUser, setLocalUser] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("kayzen_user");
+      if (saved) setLocalUser(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  const userRole = (session?.user as { role?: string })?.role || localUser?.role || "user";
+  const isPenulis = userRole === "penulis";
+
+  useEffect(() => {
+    if (isPenulis && activeTab !== "blog") {
+      setActiveTab("blog");
+    }
+  }, [isPenulis, activeTab]);
+
+  // Load Data from APIs
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [cRes, prgRes, bRes, tstRes, tmRes, pRes, uRes, usrRes] = await Promise.all([
-        fetch("/api/admin/contests"),
-        fetch("/api/admin/programs"),
-        fetch("/api/admin/blogs"),
-        fetch("/api/admin/testimonials"),
-        fetch("/api/admin/team"),
-        fetch("/api/admin/partners"),
-        fetch("/api/admin/registrations"),
-        fetch("/api/admin/users"),
-      ]);
+      if (isPenulis) {
+        const bRes = await fetch("/api/admin/blogs");
+        const bData = await bRes.json();
+        if (bData.blogs) setBlogs(bData.blogs);
+      } else {
+        const [cRes, prgRes, bRes, tstRes, tmRes, pRes, uRes, usrRes] = await Promise.all([
+          fetch("/api/admin/contests"),
+          fetch("/api/admin/programs"),
+          fetch("/api/admin/blogs"),
+          fetch("/api/admin/testimonials"),
+          fetch("/api/admin/team"),
+          fetch("/api/admin/partners"),
+          fetch("/api/admin/registrations"),
+          fetch("/api/admin/users"),
+        ]);
 
-      const cData = await cRes.json();
-      const prgData = await prgRes.json();
-      const bData = await bRes.json();
-      const tstData = await tstRes.json();
-      const tmData = await tmRes.json();
-      const pData = await pRes.json();
-      const uData = await uRes.json();
-      const usrData = await usrRes.json();
+        const cData = await cRes.json();
+        const prgData = await prgRes.json();
+        const bData = await bRes.json();
+        const tstData = await tstRes.json();
+        const tmData = await tmRes.json();
+        const pData = await pRes.json();
+        const uData = await uRes.json();
+        const usrData = await usrRes.json();
 
-      if (cData.contests) setContests(cData.contests);
-      if (prgData.programs) setPrograms(prgData.programs);
-      if (bData.blogs) setBlogs(bData.blogs);
-      if (tstData.testimonials) setTestimonials(tstData.testimonials);
-      if (tmData.teamMembers) setTeamMembers(tmData.teamMembers);
-      if (pData.partners) setPartners(pData.partners);
-      if (uData.registrations) setRegistrations(uData.registrations);
-      if (usrData.users) setUsers(usrData.users);
-      else if (uData.users) setUsers(uData.users);
+        if (cData.contests) setContests(cData.contests);
+        if (prgData.programs) setPrograms(prgData.programs);
+        if (bData.blogs) setBlogs(bData.blogs);
+        if (tstData.testimonials) setTestimonials(tstData.testimonials);
+        if (tmData.teamMembers) setTeamMembers(tmData.teamMembers);
+        if (pData.partners) setPartners(pData.partners);
+        if (uData.registrations) setRegistrations(uData.registrations);
+        if (usrData.users) setUsers(usrData.users);
+        else if (uData.users) setUsers(uData.users);
+      }
     } catch (err: any) {
       console.error("Fetch admin data error:", err);
     } finally {
@@ -76,7 +102,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchAllData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userRole]);
 
   const showNotification = (msg: string) => {
     setSuccessMsg(msg);
@@ -242,7 +269,7 @@ export default function AdminPage() {
   };
 
   // Nav Items Definition
-  const navItems = [
+  const allNavItems = [
     { id: "dashboard", label: "Dashboard Overview", badge: null },
     { id: "registrations", label: "Pendaftaran Peserta", badge: registrations.length },
     { id: "users", label: "Pengguna & Hak Akses", badge: users.length },
@@ -253,6 +280,10 @@ export default function AdminPage() {
     { id: "team", label: "Tim & Mentor", badge: teamMembers.length },
     { id: "partners", label: "Kemitraan & Partner", badge: partners.length },
   ];
+
+  const navItems = isPenulis
+    ? allNavItems.filter((item) => item.id === "blog")
+    : allNavItems;
 
   return (
     <div className={`min-h-screen ${isDarkMode ? "bg-[#04060f] text-gray-100" : "bg-slate-50 text-slate-900"} font-sans antialiased transition-colors duration-300`}>
@@ -272,13 +303,15 @@ export default function AdminPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-brand-purple/20 text-brand-purple text-xs font-bold rounded-full border border-brand-purple/30">
-                Kayzen CMS v2.0
+              <span className={`px-3 py-1 ${isPenulis ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-brand-purple/20 text-brand-purple border-brand-purple/30"} text-xs font-bold rounded-full border`}>
+                {isPenulis ? "Penulis Panel CMS" : "Kayzen CMS v2.0"}
               </span>
-              <span className="text-xs text-gray-400">Pusat Pengelolaan Konten Web Client</span>
+              <span className="text-xs text-gray-400">
+                {isPenulis ? "Akses Khusus Manajement Artikel & Blog" : "Pusat Pengelolaan Konten Web Client"}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
-              Admin Control Panel
+              {isPenulis ? "Panel Penulis Konten" : "Admin Control Panel"}
             </h1>
           </div>
 
@@ -294,12 +327,14 @@ export default function AdminPage() {
               Refresh Data
             </button>
 
-            <button
-              onClick={handleExportCSV}
-              className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer"
-            >
-              Export CSV Peserta
-            </button>
+            {!isPenulis && (
+              <button
+                onClick={handleExportCSV}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg transition-all cursor-pointer"
+              >
+                Export CSV Peserta
+              </button>
+            )}
           </div>
         </div>
 
@@ -350,12 +385,16 @@ export default function AdminPage() {
 
               <div className="mt-6 pt-4 border-t border-white/10 px-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-brand-purple/30 flex items-center justify-center font-bold text-brand-purple text-xs">
-                    KA
+                  <div className={`w-8 h-8 rounded-full ${isPenulis ? "bg-emerald-500/20 text-emerald-400" : "bg-brand-purple/30 text-brand-purple"} flex items-center justify-center font-bold text-xs`}>
+                    {isPenulis ? "P" : "KA"}
                   </div>
                   <div>
-                    <div className="text-xs font-bold">Admin Kayzen</div>
-                    <div className="text-[10px] text-gray-400">Master Administrator</div>
+                    <div className="text-xs font-bold truncate max-w-[130px]">
+                      {session?.user?.name || (isPenulis ? "Penulis Kayzen" : "Admin Kayzen")}
+                    </div>
+                    <div className="text-[10px] text-gray-400">
+                      {isPenulis ? "Penulis Blog / Konten" : "Master Administrator"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -706,10 +745,13 @@ export default function AdminPage() {
                                       className={`px-3 py-1 rounded-lg text-xs font-bold border outline-none cursor-pointer ${
                                         usr.role === "admin"
                                           ? "bg-purple-500/20 text-purple-400 border-purple-500/40"
+                                          : usr.role === "penulis"
+                                          ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
                                           : "bg-blue-500/20 text-blue-400 border-blue-500/30"
                                       }`}
                                     >
                                       <option value="user" className="text-black">User (Peserta)</option>
+                                      <option value="penulis" className="text-black">Penulis (Blog & Artikel)</option>
                                       <option value="admin" className="text-black">Admin (Pengelola)</option>
                                     </select>
                                   </td>

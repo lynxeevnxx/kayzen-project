@@ -2,14 +2,24 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ImageUploadInput from "@/components/ImageUploadInput";
 
 function ContestEditorContent() {
   const router = useRouter();
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+
+  useEffect(() => {
+    const role = (session?.user as { role?: string })?.role;
+    if (role === "penulis") {
+      router.push("/admin");
+    }
+  }, [session, router]);
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -191,25 +201,13 @@ function ContestEditorContent() {
             <div className={`p-6 rounded-2xl border space-y-4 ${isDarkMode ? "bg-brand-card border-white/10" : "bg-white border-gray-200"}`}>
               <h3 className="text-sm font-bold border-b border-white/10 pb-3">🖼️ Poster Image Lomba</h3>
 
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider opacity-60">URL Image / Poster</label>
-                <input
-                  type="text"
-                  required
-                  value={contestForm.image}
-                  onChange={(e) => setContestForm({ ...contestForm, image: e.target.value })}
-                  className="w-full mt-1 p-3 rounded-xl border border-white/10 bg-white/5 text-xs focus:outline-none focus:border-brand-purple"
-                />
-              </div>
-
-              {contestForm.image && (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider opacity-60 block mb-1">Preview Poster</label>
-                  <div className="relative w-full h-52 rounded-xl overflow-hidden border border-white/10">
-                    <Image unoptimized src={contestForm.image} alt="Preview poster" fill className="object-cover" />
-                  </div>
-                </div>
-              )}
+              <ImageUploadInput
+                value={contestForm.image}
+                onChange={(url) => setContestForm({ ...contestForm, image: url })}
+                label="Poster Lomba"
+                maxSizeMB={10}
+                isDarkMode={isDarkMode}
+              />
             </div>
           </div>
         </form>

@@ -9,3 +9,13 @@ export async function getAdminSession() {
   }
   return session;
 }
+
+export async function getAdminOrPenulisSession() {
+  const session = await getServerSession(authOptions);
+  const role = (session?.user as { role?: string })?.role;
+  if (!session?.user || (role !== "admin" && role !== "penulis")) {
+    return null;
+  }
+  return session;
+}
+

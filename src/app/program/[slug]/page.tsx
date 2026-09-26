@@ -32,43 +32,43 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
   };
 
   const [dbProgram, setDbProgram] = useState<any>(null);
-  const [loading, setLoading] = useState(!programDetails[slug]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (programDetails[slug]) return;
     fetch("/api/content/programs")
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.programs || [];
         const found = list.find((p: any) => p.slug === slug || p.id === slug);
         if (found) {
+          const staticDefault = programDetails[slug];
           setDbProgram({
             id: found.id,
-            title: found.title,
-            badge: (found.category || "Bootcamp").toUpperCase(),
-            badgeColor: "bg-brand-purple text-white border-brand-purple/40",
-            tagline: found.description || "Program bootcamp komprehensif di Kayzen Academia.",
-            description: found.description || "Program intensif terstruktur bersama mentor ahli.",
-            price: found.price || "Gratis",
-            rating: 5.0,
-            reviewsCount: 1,
-            studentsCount: "10+",
-            duration: "4 Minggu",
-            modulesCount: "8 Modul",
-            certificate: true,
-            image: found.image || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
+            title: found.title || staticDefault?.title,
+            badge: (found.category || staticDefault?.badge || "Bootcamp").toUpperCase(),
+            badgeColor: staticDefault?.badgeColor || "bg-brand-purple text-white border-brand-purple/40",
+            tagline: found.description || staticDefault?.tagline || "Program bootcamp komprehensif di Kayzen Academia.",
+            description: found.description || staticDefault?.description || "Program intensif terstruktur bersama mentor ahli.",
+            price: found.price || staticDefault?.price || "Gratis",
+            rating: staticDefault?.rating || 5.0,
+            reviewsCount: staticDefault?.reviewsCount || 1,
+            studentsCount: staticDefault?.studentsCount || "10+",
+            duration: staticDefault?.duration || "4 Minggu",
+            modulesCount: staticDefault?.modulesCount || "8 Modul",
+            certificate: staticDefault?.certificate ?? true,
+            image: found.image || staticDefault?.image || "https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=800&q=80",
             instructor: {
-              name: found.mentor || "Tim Mentor Kayzen",
-              role: "Mentor Expert",
-              avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-              bio: "Praktisi & mentor ahli di bidangnya."
+              name: found.mentor || staticDefault?.instructor?.name || "Tim Mentor Kayzen",
+              role: staticDefault?.instructor?.role || "Mentor Expert",
+              avatar: staticDefault?.instructor?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+              bio: staticDefault?.instructor?.bio || "Praktisi & mentor ahli di bidangnya."
             },
-            benefits: [
+            benefits: staticDefault?.benefits || [
               "Akses Modul & Materi Pembelajaran HD",
               "Sesi Mentoring & Bedah Proyek",
               "Sertifikat Kelulusan Resmi Kayzen Academia"
             ],
-            syllabus: [
+            syllabus: staticDefault?.syllabus || [
               { week: "Minggu 1", title: "Pengenalan & Kerangka Kerja", desc: "Pemahaman fundamental dan teori pendukung." },
               { week: "Minggu 2-3", title: "Praktik & Pendampingan", desc: "Pengerjaan studi kasus dan bimbingan mentor." },
               { week: "Minggu 4", title: "Review & Final Project", desc: "Evaluasi hasil karya dan pemberian sertifikat." }
@@ -80,7 +80,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
       .finally(() => setLoading(false));
   }, [slug]);
 
-  const program = programDetails[slug] || dbProgram;
+  const program = dbProgram || programDetails[slug];
 
   if (loading) {
     return (
@@ -204,7 +204,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
                 <div className="pt-4">
                   <h4 className={`font-display text-base font-bold mb-4 ${isDarkMode ? "text-white" : "text-gray-900"}`}>Fasilitas & Manfaat yang Didapatkan:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {program.benefits.map((benefit, idx) => (
+                    {(program.benefits || []).map((benefit: string, idx: number) => (
                       <div key={idx} className={`p-3.5 rounded-xl border flex items-start gap-3 text-xs font-semibold ${
                         isDarkMode ? "bg-white/5 border-white/5 text-gray-200" : "bg-white border-gray-200 text-gray-800 shadow-sm"
                       }`}>
@@ -224,7 +224,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
                 </div>
 
                 <div className="space-y-4">
-                  {program.syllabus.map((item, idx) => (
+                  {(program.syllabus || []).map((item: any, idx: number) => (
                     <div key={idx} className={`p-5 rounded-2xl border ${
                       isDarkMode ? "bg-[#090d18] border-white/10" : "bg-white border-gray-200 shadow-sm"
                     }`}>

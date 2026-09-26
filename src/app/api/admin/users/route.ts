@@ -28,8 +28,8 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: "ID User dan Role wajib diisi" }, { status: 400 });
     }
 
-    if (role !== "user" && role !== "admin") {
-      return NextResponse.json({ message: "Role harus 'user' atau 'admin'" }, { status: 400 });
+    if (role !== "user" && role !== "admin" && role !== "penulis") {
+      return NextResponse.json({ message: "Role harus 'user', 'penulis', atau 'admin'" }, { status: 400 });
     }
 
     const currentUserId = (session.user as { id?: string }).id;

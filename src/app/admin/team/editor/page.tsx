@@ -2,14 +2,24 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ImageUploadInput from "@/components/ImageUploadInput";
 
 function TeamEditorContent() {
   const router = useRouter();
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
+
+  useEffect(() => {
+    const role = (session?.user as { role?: string })?.role;
+    if (role === "penulis") {
+      router.push("/admin");
+    }
+  }, [session, router]);
 
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -118,17 +128,13 @@ function TeamEditorContent() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">URL Foto Profil</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="https://..."
-                  value={form.avatar}
-                  onChange={(e) => setForm({ ...form, avatar: e.target.value })}
-                  className={`w-full p-3.5 rounded-xl border text-xs outline-none ${isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200"}`}
-                />
-              </div>
+              <ImageUploadInput
+                value={form.avatar}
+                onChange={(url) => setForm({ ...form, avatar: url })}
+                label="Foto Profil Mentor"
+                maxSizeMB={10}
+                isDarkMode={isDarkMode}
+              />
 
               <div>
                 <label className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">Bio / Deskripsi Pengalaman</label>

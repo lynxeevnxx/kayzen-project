@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getSupabase, initTables } from '@/lib/db';
-import { getAdminSession } from '@/lib/auth-guard';
+import { getAdminOrPenulisSession } from '@/lib/auth-guard';
 
 export async function GET() {
   try {
-    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
+    if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
     await initTables();
     const { data: blogs, error } = await getSupabase().from('blogs').select('*').order('created_at', { ascending: false });
     if (error) throw error;
@@ -17,7 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
+    if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { title, category, author, image, excerpt, content, status } = body;
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
+    if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
     await initTables();
     const body = await req.json();
     const { id, title, category, author, image, excerpt, content, status } = body;
@@ -70,7 +70,7 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    if (!await getAdminSession()) return NextResponse.json({ message: 'Akses admin diperlukan' }, { status: 401 });
+    if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
     await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');

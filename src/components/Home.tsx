@@ -2086,6 +2086,54 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
               </div>
             </section>
 
+            {/* DYNAMIC PARTNER SHOWCASE SECTION */}
+            {dbPartners && dbPartners.length > 0 && (
+              <section className="px-6 lg:px-16">
+                <div className="max-w-7xl mx-auto space-y-8">
+                  <div className="text-center space-y-3">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-primary">
+                      Kemitraan Terdaftar
+                    </span>
+                    <h3 className={`font-display text-2xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                      Mitra Resmi &amp; Kolaborator Kayzen
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {dbPartners.map((partner) => (
+                      <div
+                        key={partner.id}
+                        className={`p-6 rounded-2xl border flex items-center gap-4 transition-all ${
+                          isDarkMode
+                            ? "bg-brand-card/40 border-white/5 hover:border-brand-primary/40"
+                            : "bg-white border-gray-200 shadow-sm hover:shadow-md"
+                        }`}
+                      >
+                        <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-white/10">
+                          <Image
+                            src={partner.logo || partner.image || "https://images.unsplash.com/photo-1516880711640-ef7db81be3e1?auto=format&fit=crop&w=200&q=80"}
+                            alt={partner.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="space-y-1 text-left overflow-hidden">
+                          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 uppercase tracking-wider">
+                            {partner.category || "Mitra Kampus"}
+                          </span>
+                          <h4 className={`font-bold text-sm truncate ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                            {partner.name}
+                          </h4>
+                          <p className={`text-[11px] truncate ${isDarkMode ? "text-brand-muted" : "text-gray-500"}`}>
+                            {partner.description || partner.status || "Mitra Aktif"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* CTA BANNER */}
             <section className="px-6 lg:px-16">
               <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-brand p-8 sm:p-12 relative overflow-hidden shadow-2xl shadow-brand-primary/20">

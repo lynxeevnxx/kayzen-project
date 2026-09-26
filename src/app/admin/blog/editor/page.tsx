@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ImageUploadInput from "@/components/ImageUploadInput";
 
 function BlogEditorContent() {
   const router = useRouter();
@@ -178,26 +179,13 @@ function BlogEditorContent() {
                 />
               </div>
 
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider opacity-60">URL Gambar Cover</label>
-                <input
-                  type="text"
-                  required
-                  value={blogForm.image}
-                  onChange={(e) => setBlogForm({ ...blogForm, image: e.target.value })}
-                  className="w-full mt-1 p-3 rounded-xl border border-white/10 bg-white/5 text-xs focus:outline-none focus:border-brand-purple"
-                />
-              </div>
-
-              {/* COVER PREVIEW */}
-              {blogForm.image && (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider opacity-60 block mb-1">Preview Cover</label>
-                  <div className="relative w-full h-40 rounded-xl overflow-hidden border border-white/10">
-                    <Image unoptimized src={blogForm.image} alt="Preview cover" fill className="object-cover" />
-                  </div>
-                </div>
-              )}
+              <ImageUploadInput
+                value={blogForm.image}
+                onChange={(url) => setBlogForm({ ...blogForm, image: url })}
+                label="Gambar Cover Artikel"
+                maxSizeMB={10}
+                isDarkMode={isDarkMode}
+              />
             </div>
           </div>
         </form>

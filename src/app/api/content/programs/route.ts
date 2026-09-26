@@ -7,7 +7,7 @@ export async function GET() {
     const { data: programs, error } = await getSupabase()
       .from("programs")
       .select("*")
-      .or("status.eq.active,status.is.null")
+      .or("status.eq.active,status.eq.open,status.eq.published,status.is.null")
       .order("created_at", { ascending: false });
     if (error) throw error;
     return NextResponse.json({ success: true, programs: programs || [] }, { headers: { "Cache-Control": "s-maxage=60, stale-while-revalidate=300" } });
