@@ -79,15 +79,15 @@ export default function Header({ isDarkMode, setIsDarkMode, activeTab = "beranda
       <div className="max-w-7xl mx-auto flex items-center justify-between h-20">
         
         {/* Logo Brand */}
-        <Link href="/" className="flex items-center gap-3 cursor-pointer">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
-            <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
+        <Link href="/" className="flex items-center gap-3.5 cursor-pointer group">
+          <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" priority />
           </div>
           <div>
-            <span className={`font-display font-bold text-xl tracking-wider block ${
+            <span className={`font-display font-bold text-xl sm:text-2xl tracking-wider block leading-none ${
               isDarkMode ? "text-white" : "text-[#0e1726]"
             }`}>KAYZEN</span>
-            <span className="text-[10px] tracking-[0.25em] text-brand-primary font-bold block -mt-1">ACADEMIA</span>
+            <span className="text-[10px] sm:text-[11px] tracking-[0.25em] text-brand-primary font-bold block mt-0.5">ACADEMIA</span>
           </div>
         </Link>
 

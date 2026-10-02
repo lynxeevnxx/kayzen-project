@@ -3234,10 +3234,10 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
           {/* Brand Col */}
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0">
+              <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden shrink-0">
                 <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
               </div>
-              <span className="font-display font-bold text-base tracking-wider text-white">KAYZEN ACADEMIA</span>
+              <span className="font-display font-bold text-base sm:text-lg tracking-wider text-white">KAYZEN ACADEMIA</span>
             </div>
             <p className="leading-relaxed">
               Memberdayakan pelajar dan mahasiswa melalui kepenulisan ilmiah dan inovasi untuk menciptakan karya berkualitas yang memberi dampak nyata.

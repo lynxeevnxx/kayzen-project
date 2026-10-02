@@ -120,13 +120,13 @@ export default function MasukPage() {
         </Link>
 
         <div className="space-y-8 relative z-10 text-left my-auto max-w-lg">
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 shrink-0 rounded-xl overflow-hidden">
-              <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
+          <div className="flex items-center gap-3.5">
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-xl overflow-hidden">
+              <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" priority />
             </div>
             <div>
-              <span className="font-display font-bold text-xl tracking-wider text-white block">KAYZEN</span>
-              <span className="text-[10px] tracking-[0.25em] text-brand-primary font-bold block -mt-1">ACADEMIA</span>
+              <span className="font-display font-bold text-xl sm:text-2xl tracking-wider text-white block leading-none">KAYZEN</span>
+              <span className="text-[10px] sm:text-[11px] tracking-[0.25em] text-brand-primary font-bold block mt-0.5">ACADEMIA</span>
             </div>
           </div>
 
