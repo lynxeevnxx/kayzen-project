@@ -80,8 +80,8 @@ export default function Header({ isDarkMode, setIsDarkMode, activeTab = "beranda
         
         {/* Logo Brand */}
         <Link href="/" className="flex items-center gap-3 cursor-pointer">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-brand-primary/20 shrink-0">
-            <Image src="/logo.jpg" alt="Kayzen Academia Logo" fill className="object-cover" />
+          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0">
+            <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
           </div>
           <div>
             <span className={`font-display font-bold text-xl tracking-wider block ${

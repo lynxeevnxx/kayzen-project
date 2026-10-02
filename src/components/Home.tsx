@@ -3235,7 +3235,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
               <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0">
-                <Image src="/logo.jpg" alt="Kayzen Academia Logo" fill className="object-cover" />
+                <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
               </div>
               <span className="font-display font-bold text-base tracking-wider text-white">KAYZEN ACADEMIA</span>
             </div>

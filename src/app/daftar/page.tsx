@@ -94,8 +94,8 @@ export default function DaftarPage() {
 
         <div className="space-y-8 relative z-10 text-left my-auto max-w-lg">
           <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 shrink-0 rounded-xl overflow-hidden shadow-lg shadow-brand-primary/20">
-              <Image src="/logo.jpg" alt="Kayzen Academia Logo" fill className="object-cover" />
+            <div className="relative w-10 h-10 shrink-0 rounded-xl overflow-hidden">
+              <Image src="/logo.png" alt="Kayzen Academia Logo" fill className="object-contain" />
             </div>
             <div>
               <span className="font-display font-bold text-xl tracking-wider text-white block">KAYZEN</span>
