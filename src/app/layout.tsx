@@ -63,7 +63,9 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
   },
 };
 
@@ -77,7 +79,7 @@ export default function RootLayout({
     "@type": "EducationalOrganization",
     name: "Kayzen Academia",
     url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
+    logo: `${baseUrl}/logo.jpg`,
     description:
       "Platform bimbingan kepenulisan ilmiah, esai beasiswa, dan riset inovasi mahasiswa.",
     sameAs: [
