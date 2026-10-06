@@ -64,11 +64,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/logo.png" },
-      { url: "/favicon.ico" },
+      { url: "/logo.png?v=3", type: "image/png", sizes: "any" },
+      { url: "/icon.png?v=3", type: "image/png" },
+      { url: "/favicon.ico?v=3", type: "image/x-icon" },
     ],
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    shortcut: "/logo.png?v=3",
+    apple: [
+      { url: "/apple-touch-icon.png?v=3", sizes: "180x180", type: "image/png" },
+      { url: "/logo.png?v=3" },
+    ],
   },
 };
 
@@ -94,9 +98,12 @@ export default function RootLayout({
   return (
     <html lang="id" className="h-full antialiased" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/logo.png" type="image/png" sizes="any" />
-        <link rel="shortcut icon" href="/logo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" href="/logo.png?v=3" type="image/png" sizes="any" />
+        <link rel="icon" href="/icon.png?v=3" type="image/png" />
+        <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" />
+        <link rel="shortcut icon" href="/logo.png?v=3" type="image/png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3" />
+        <link rel="apple-touch-icon" href="/logo.png?v=3" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
