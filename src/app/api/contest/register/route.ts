@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { initTables, getSupabase } from '@/lib/db';
+import { getSupabase } from '@/lib/db';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
@@ -17,7 +17,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Silakan masuk kembali sebelum mendaftar' }, { status: 401 });
     }
 
-    await initTables();
 
     const { data: user, error: userErr } = await getSupabase()
       .from('users')
@@ -56,6 +55,6 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error('Contest Register API Error:', error);
-    return NextResponse.json({ message: error.message || 'Terjadi kesalahan server' }, { status: 500 });
+    return NextResponse.json({ message: 'Terjadi kesalahan server' }, { status: 500 });
   }
 }

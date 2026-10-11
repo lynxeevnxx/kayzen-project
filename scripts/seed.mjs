@@ -31,20 +31,27 @@ async function seedDatabase() {
   console.log("Seeding data to Supabase...");
 
   try {
-    // 0. Default Admin User
-    const hashedPassword = await bcrypt.hash("admin123", 10);
-    const { error: err0 } = await sb.from("users").upsert([
-      {
-        id: "usr_admin_1",
-        name: "Administrator Kayzen",
-        email: "admin@kayzenacademia.com",
-        password: hashedPassword,
-        role: "admin",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-      }
-    ]);
-    if (err0) console.error("Admin User Error:", err0.message);
-    else console.log("✓ Default Admin User seeded");
+    // 0. Admin awal — password WAJIB dari env, tidak ada password bawaan.
+    //    Contoh: SEED_ADMIN_EMAIL=admin@kayzenacademia.com SEED_ADMIN_PASSWORD='...' node scripts/seed.mjs
+    const adminEmail = (process.env.SEED_ADMIN_EMAIL || envVars.SEED_ADMIN_EMAIL || "admin@kayzenacademia.com").trim().toLowerCase();
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || envVars.SEED_ADMIN_PASSWORD || "";
+    if (adminPassword.length < 12) {
+      console.warn("⚠ SEED_ADMIN_PASSWORD tidak diisi / kurang dari 12 karakter — akun admin TIDAK di-seed.");
+    } else {
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
+      const { error: err0 } = await sb.from("users").upsert([
+        {
+          id: "usr_admin_1",
+          name: "Administrator Kayzen",
+          email: adminEmail,
+          password: hashedPassword,
+          role: "admin",
+          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+        }
+      ]);
+      if (err0) console.error("Admin User Error:", err0.message);
+      else console.log("✓ Admin user seeded:", adminEmail);
+    }
     // 1. Contests
     const { error: err1 } = await sb.from("contests").upsert([
       {

@@ -4,7 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
+
+// NextAuth mengembalikan "CredentialsSignin" bila error tanpa pesan; selain itu pesan dari server.
+function authErrorMessage(error: string | null | undefined, fallback: string) {
+  return !error || error === "CredentialsSignin" ? fallback : error;
+}
 
 export default function MasukPage() {
   const router = useRouter();
@@ -33,20 +38,13 @@ export default function MasukPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const result = await signIn("credentials", { email, password, redirect: false });
+      if (!result || result.error) {
+        throw new Error(authErrorMessage(result?.error, "Email atau password salah"));
+      }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login gagal");
-
-      const sessionResult = await signIn("credentials", { email, password, redirect: false });
-      if (sessionResult?.error) throw new Error("Sesi login gagal dibuat. Silakan coba lagi.");
-
-      localStorage.setItem("kayzen_user", JSON.stringify(data.user));
-      alert("Selamat Datang Kembali, " + data.user.name + "!");
+      const session = await getSession();
+      alert("Selamat Datang Kembali, " + (session?.user?.name || "Pengguna") + "!");
       router.push("/?auth=success");
     } catch (err: any) {
       setError(err.message);
@@ -88,16 +86,11 @@ export default function MasukPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: otpCode }),
-      });
+      const result = await signIn("otp", { email, otp: otpCode, redirect: false });
+      if (!result || result.error) {
+        throw new Error(authErrorMessage(result?.error, "Verifikasi OTP gagal"));
+      }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Verifikasi OTP gagal");
-
-      localStorage.setItem("kayzen_user", JSON.stringify(data.user));
       alert("Email Berhasil Diverifikasi! Selamat Datang.");
       router.push("/?auth=success");
     } catch (err: any) {

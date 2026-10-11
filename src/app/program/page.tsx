@@ -36,7 +36,7 @@ export default function ProgramListPage() {
   });
 
   useEffect(() => {
-    fetch("/api/content/programs")
+    fetch("/api/content/programs", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data)

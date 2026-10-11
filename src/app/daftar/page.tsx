@@ -61,16 +61,11 @@ export default function DaftarPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, otp: otpCode }),
-      });
+      const result = await signIn("otp", { name, email, password, otp: otpCode, redirect: false });
+      if (!result || result.error) {
+        throw new Error(!result?.error || result.error === "CredentialsSignin" ? "Verifikasi OTP gagal" : result.error);
+      }
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Verifikasi OTP gagal");
-
-      localStorage.setItem("kayzen_user", JSON.stringify(data.user));
       alert("Email Berhasil Diverifikasi! Akun Terbuat.");
       router.push("/?auth=success");
     } catch (err: any) {
@@ -201,8 +196,8 @@ export default function DaftarPage() {
                   <input
                     type="password"
                     required
-                    minLength={6}
-                    placeholder="Minimal 6 karakter"
+                    minLength={8}
+                    placeholder="Minimal 8 karakter"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full border border-gray-200 bg-gray-50/50 px-4 py-3 rounded-xl text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-brand-purple focus:ring-1 focus:ring-brand-purple/20 transition-all"

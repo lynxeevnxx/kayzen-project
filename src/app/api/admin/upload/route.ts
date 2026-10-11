@@ -1,13 +1,39 @@
 import { NextResponse } from "next/server";
 import { getAdminOrPenulisSession } from "@/lib/auth-guard";
-import path from "path";
-import fs from "fs/promises";
+import { getSupabase } from "@/lib/db";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
+// Gambar disimpan di Supabase Storage, bukan di folder public/.
+// File yang ditulis ke public/ saat runtime tidak disajikan oleh `next start`/standalone,
+// dan di Vercel filesystem-nya read-only — itulah penyebab cover rusak/error.
+const BUCKET = "uploads";
+const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+
+// Ekstensi ditentukan dari MIME (bukan dari nama file) supaya file non-gambar tidak bisa menyamar.
+const ALLOWED_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/avif": "avif",
+  "image/svg+xml": "svg",
 };
+
+let bucketReady = false;
+
+async function ensureBucket() {
+  if (bucketReady) return;
+  const storage = getSupabase().storage;
+  const { data } = await storage.getBucket(BUCKET);
+  if (!data) {
+    const { error } = await storage.createBucket(BUCKET, {
+      public: true,
+      fileSizeLimit: MAX_SIZE,
+      allowedMimeTypes: Object.keys(ALLOWED_TYPES),
+    });
+    if (error && !/already exists/i.test(error.message)) throw error;
+  }
+  bucketReady = true;
+}
 
 export async function POST(req: Request) {
   try {
@@ -20,14 +46,12 @@ export async function POST(req: Request) {
     }
 
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const file = formData.get("file");
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json({ message: "File gambar tidak ditemukan" }, { status: 400 });
     }
 
-    // 10 MB limit check
-    const MAX_SIZE = 10 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
       const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
       return NextResponse.json(
@@ -36,43 +60,40 @@ export async function POST(req: Request) {
       );
     }
 
-    // MIME type check
-    if (!file.type || !file.type.startsWith("image/")) {
+    const ext = ALLOWED_TYPES[file.type];
+    if (!ext) {
       return NextResponse.json(
-        { message: "File harus berupa format gambar (JPG, PNG, WEBP, GIF, SVG)" },
+        { message: "File harus berupa format gambar (JPG, PNG, WEBP, GIF, AVIF, SVG)" },
         { status: 400 }
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    await ensureBucket();
 
-    // Ensure uploads directory exists
-    await fs.mkdir(uploadDir, { recursive: true });
+    const baseName = file.name.replace(/\.[^.]*$/, "");
+    const safeBaseName = baseName.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30) || "gambar";
+    const filePath = `img_${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${safeBaseName}.${ext}`;
 
-    // Sanitize filename & create unique name
-    const ext = path.extname(file.name) || ".jpg";
-    const safeBaseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
-    const fileName = `img_${Date.now()}_${safeBaseName}${ext}`;
-    const filePath = path.join(uploadDir, fileName);
+    const storage = getSupabase().storage.from(BUCKET);
+    const { error: uploadError } = await storage.upload(filePath, Buffer.from(await file.arrayBuffer()), {
+      contentType: file.type,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+    if (uploadError) throw uploadError;
 
-    // Save file
-    await fs.writeFile(filePath, buffer);
-
-    const publicUrl = `/uploads/${fileName}`;
+    const { data } = storage.getPublicUrl(filePath);
 
     return NextResponse.json({
       success: true,
       message: "Gambar berhasil diupload",
-      url: publicUrl,
+      url: data.publicUrl,
       size: file.size,
-      filename: fileName,
+      filename: filePath,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Upload Error:", error);
-    return NextResponse.json(
-      { message: error.message || "Gagal mengupload gambar" },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Gagal mengupload gambar";
+    return NextResponse.json({ message: `Gagal mengupload gambar: ${message}` }, { status: 500 });
   }
 }

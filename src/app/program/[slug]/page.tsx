@@ -35,7 +35,7 @@ export default function ProgramDetailPage({ params }: { params: Promise<{ slug: 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/content/programs")
+    fetch("/api/content/programs", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.programs || [];

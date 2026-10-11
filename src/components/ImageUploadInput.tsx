@@ -3,6 +3,18 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif", "image/svg+xml"];
+
+// Hanya URL https:// atau path lokal (/...) yang aman dirender next/image di produksi.
+function isValidImageUrl(url: string) {
+  if (url.startsWith("/")) return !url.startsWith("//");
+  try {
+    return new URL(url).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 interface ImageUploadInputProps {
   value: string;
   onChange: (url: string) => void;
@@ -22,6 +34,7 @@ export default function ImageUploadInput({
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [urlDraft, setUrlDraft] = useState(value);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_BYTES = maxSizeMB * 1024 * 1024;
@@ -35,8 +48,8 @@ export default function ImageUploadInput({
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
-      setErrorMsg("❌ File harus berupa format gambar (JPG, PNG, WEBP, GIF, SVG).");
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      setErrorMsg("❌ File harus berupa format gambar (JPG, PNG, WEBP, GIF, AVIF, SVG).");
       return;
     }
 
@@ -51,14 +64,16 @@ export default function ImageUploadInput({
         body: formData,
       });
 
-      const data = await res.json();
+      // Respons non-JSON (mis. 413 dari server/proxy karena file terlalu besar) jangan sampai jadi error parsing.
+      const data = await res.json().catch(() => ({ message: `Upload gagal (HTTP ${res.status})` }));
       if (!res.ok) {
         throw new Error(data.message || "Gagal mengupload gambar");
       }
 
       onChange(data.url);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Gagal mengupload gambar");
+      setUrlDraft(data.url);
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Gagal mengupload gambar");
     } finally {
       setUploading(false);
     }
@@ -98,7 +113,10 @@ export default function ImageUploadInput({
           </button>
           <button
             type="button"
-            onClick={() => setMode("url")}
+            onClick={() => {
+              setUrlDraft(value);
+              setMode("url");
+            }}
             className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
               mode === "url"
                 ? "bg-brand-purple text-white"
@@ -118,7 +136,7 @@ export default function ImageUploadInput({
             type="file"
             ref={fileInputRef}
             onChange={onFileInputChange}
-            accept="image/*"
+            accept={ACCEPTED_TYPES.join(",")}
             className="hidden"
           />
 
@@ -153,7 +171,7 @@ export default function ImageUploadInput({
                     Klik atau tarik file gambar ke sini
                   </p>
                   <p className="text-[10px] text-gray-400 mt-0.5">
-                    Maksimal file: <strong>{maxSizeMB} MB</strong> (JPG, PNG, WEBP, GIF, SVG)
+                    Maksimal file: <strong>{maxSizeMB} MB</strong> (JPG, PNG, WEBP, GIF, AVIF, SVG)
                   </p>
                 </div>
               </>
@@ -165,8 +183,20 @@ export default function ImageUploadInput({
           <input
             type="text"
             placeholder="https://example.com/gambar.jpg"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
+            value={urlDraft}
+            onChange={(e) => {
+              const next = e.target.value.trim();
+              setUrlDraft(e.target.value);
+              if (!next) {
+                setErrorMsg("");
+                onChange("");
+              } else if (isValidImageUrl(next)) {
+                setErrorMsg("");
+                onChange(next);
+              } else {
+                setErrorMsg("❌ URL gambar harus diawali https:// (contoh: https://example.com/gambar.jpg).");
+              }
+            }}
             className={`w-full p-3 rounded-xl border text-xs outline-none focus:border-brand-purple ${
               isDarkMode ? "bg-white/5 border-white/10 text-white" : "bg-white border-gray-300 text-gray-900"
             }`}
@@ -194,7 +224,10 @@ export default function ImageUploadInput({
           </div>
           <button
             type="button"
-            onClick={() => onChange("")}
+            onClick={() => {
+              setUrlDraft("");
+              onChange("");
+            }}
             className="px-2.5 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold transition-all cursor-pointer"
           >
             Hapus

@@ -2,6 +2,7 @@
 -- KAYZEN ACADEMIA - SUPABASE DATABASE SCHEMA SCRIPT
 -- Paste and run this script in your Supabase SQL Editor
 -- (Dashboard -> SQL Editor -> New Query -> Run)
+-- Aman dijalankan ulang di database yang sudah ada (idempotent).
 -- ===================================================
 
 -- 1. Users Table
@@ -117,24 +118,25 @@ CREATE TABLE IF NOT EXISTS public.email_otps (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Disable RLS (Row Level Security) for simple REST access
-ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contests DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.blogs DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.partners DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.contest_registrations DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.programs DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.testimonials DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.team_members DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.email_otps DISABLE ROW LEVEL SECURITY;
+-- ===================================================
+-- KEAMANAN
+-- Aplikasi mengakses database HANYA dari server memakai secret key (bypass RLS).
+-- RLS diaktifkan TANPA policy, sehingga anon/publishable key tidak bisa membaca/menulis apa pun.
+-- ===================================================
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.partners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contest_registrations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.programs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.team_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.email_otps ENABLE ROW LEVEL SECURITY;
 
--- Optional exec_sql helper function for direct RPC execution
-CREATE OR REPLACE FUNCTION public.exec_sql(query text)
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-  EXECUTE query;
-END;
-$$;
+-- Fungsi exec_sql versi lama = eksekusi SQL bebas lewat API. Hapus.
+DROP FUNCTION IF EXISTS public.exec_sql(text);
+
+-- Index untuk query yang sering dipakai
+CREATE INDEX IF NOT EXISTS blogs_slug_idx ON public.blogs (slug);
+CREATE INDEX IF NOT EXISTS programs_slug_idx ON public.programs (slug);
+CREATE INDEX IF NOT EXISTS registrations_created_idx ON public.contest_registrations (created_at DESC);

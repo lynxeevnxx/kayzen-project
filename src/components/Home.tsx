@@ -7,18 +7,9 @@ import Header from "@/components/Header";
 
 type Tab = "beranda" | "program" | "kemitraan" | "info-lomba" | "blog" | "tentang-kami";
 
-interface UserProfile {
-  name?: string;
-  email?: string;
-  role?: string;
-  [key: string]: unknown;
-}
-
 export default function Home({ initialTab }: { initialTab?: Tab }) {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab || "beranda");
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   useEffect(() => {
     try {
@@ -40,26 +31,6 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
     }
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        const savedUser = localStorage.getItem("kayzen_user");
-        if (savedUser) {
-          const parsed = JSON.parse(savedUser) as UserProfile;
-          setCurrentUser(parsed);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("kayzen_user");
-    setCurrentUser(null);
-    setShowUserDropdown(false);
-  };
   const [activeTestimonialPage, setActiveTestimonialPage] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Semua");
@@ -86,12 +57,12 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
     const fetchLiveContent = async () => {
       try {
         const [cRes, prgRes, bRes, pRes, tRes, tmRes] = await Promise.all([
-          fetch("/api/content/contests"),
-          fetch("/api/content/programs"),
-          fetch("/api/content/blogs"),
-          fetch("/api/content/partners"),
-          fetch("/api/content/testimonials"),
-          fetch("/api/content/team"),
+          fetch("/api/content/contests", { cache: "no-store" }),
+          fetch("/api/content/programs", { cache: "no-store" }),
+          fetch("/api/content/blogs", { cache: "no-store" }),
+          fetch("/api/content/partners", { cache: "no-store" }),
+          fetch("/api/content/testimonials", { cache: "no-store" }),
+          fetch("/api/content/team", { cache: "no-store" }),
         ]);
 
         const cData = await cRes.json();
@@ -634,7 +605,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                       desc: "Bergabung dengan komunitas pelajar dan bertumbuh bersama.",
                       icon: (
                         <svg className="w-6 h-6 text-brand-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 025.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                       )
                     }
@@ -2910,7 +2881,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                       desc: "Bergabung dan terus bertumbuh bersama kami.",
                       icon: (
                         <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 025.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                       )
                     },
@@ -3038,7 +3009,7 @@ export default function Home({ initialTab }: { initialTab?: Tab }) {
                         desc: "Belajar langsung dari mentor berpengalaman yang siap membimbing setiap langkah perjalananmu.",
                         icon: (
                           <svg className="w-6 h-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 025.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
                           </svg>
                         )
                       },

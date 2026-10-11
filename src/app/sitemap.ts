@@ -1,10 +1,12 @@
 import { MetadataRoute } from "next";
-import { getSupabase, initTables } from "@/lib/db";
+import { getSupabase } from "@/lib/db";
 
 interface DbItem {
   slug: string;
   created_at?: string;
 }
+
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://kayzenacademia.id";
@@ -49,7 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    await initTables();
     const sb = getSupabase();
 
     const [blogsRes, programsRes] = await Promise.all([

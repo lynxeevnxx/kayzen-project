@@ -1,17 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
-
-interface UserProfile {
-  name?: string;
-  email?: string;
-  avatar?: string;
-  role?: string;
-  [key: string]: unknown;
-}
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -21,41 +13,28 @@ interface HeaderProps {
 
 export default function Header({ isDarkMode, setIsDarkMode, activeTab = "beranda" }: HeaderProps) {
   const { data: session } = useSession();
-  const [localUser, setLocalUser] = useState<UserProfile | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem("kayzen_user");
-      if (savedUser) {
-        setLocalUser(JSON.parse(savedUser));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-
-  // Priority: NextAuth Session User (e.g. Google) or LocalStorage User (Email OTP/Password)
+  // Sumber kebenaran user hanya session NextAuth (bukan localStorage yang bisa dimanipulasi).
   const activeUser = session?.user
     ? {
-        name: session.user.name || "Pengguna Google",
+        name: session.user.name || "Pengguna",
         email: session.user.email || "",
         avatar: session.user.image || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80",
       }
-    : localUser;
+    : null;
 
-  const userRole = (session?.user as { role?: string })?.role || localUser?.role;
+  const userRole = (session?.user as { role?: string })?.role;
   const isAdmin = userRole === "admin";
   const isPenulis = userRole === "penulis";
   const canAccessAdmin = isAdmin || isPenulis;
 
   const handleLogout = () => {
-    localStorage.removeItem("kayzen_user");
-    setLocalUser(null);
     setShowUserDropdown(false);
-    if (session) {
-      signOut({ callbackUrl: "/" });
-    }
+    try {
+      localStorage.removeItem("kayzen_user"); // bersihkan sisa data versi lama
+    } catch {}
+    signOut({ callbackUrl: "/" });
   };
 
   const navItems = [

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getSupabase, initTables } from '@/lib/db';
+import { getSupabase } from '@/lib/db';
 import { getAdminOrPenulisSession } from '@/lib/auth-guard';
+import { sanitizeBlogHtml } from '@/lib/sanitize';
 
 export async function GET() {
   try {
     if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
-    await initTables();
     const { data: blogs, error } = await getSupabase().from('blogs').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     return NextResponse.json({ success: true, blogs: blogs || [] });
@@ -18,7 +18,6 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
-    await initTables();
     const body = await req.json();
     const { title, category, author, image, excerpt, content, status } = body;
 
@@ -32,7 +31,7 @@ export async function POST(req: Request) {
     const { error } = await getSupabase().from('blogs').insert({
       id, title, slug, category: category || 'Artikel',
       author: author || 'Tim Kayzen Academia', image,
-      excerpt: excerpt || '', content: content || '', status: status || 'published'
+      excerpt: excerpt || '', content: sanitizeBlogHtml(content), status: status || 'published'
     });
     if (error) throw error;
 
@@ -46,7 +45,6 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
   try {
     if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
-    await initTables();
     const body = await req.json();
     const { id, title, category, author, image, excerpt, content, status } = body;
 
@@ -57,7 +55,8 @@ export async function PUT(req: Request) {
     const slug = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'artikel';
 
     const { error } = await getSupabase().from('blogs').update({
-      title, slug, category, author, image, excerpt, content, status
+      title, slug, category, author, image, excerpt,
+      content: content === undefined ? undefined : sanitizeBlogHtml(content), status
     }).eq('id', id);
     if (error) throw error;
 
@@ -71,7 +70,6 @@ export async function PUT(req: Request) {
 export async function DELETE(req: Request) {
   try {
     if (!await getAdminOrPenulisSession()) return NextResponse.json({ message: 'Akses admin atau penulis diperlukan' }, { status: 401 });
-    await initTables();
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
 

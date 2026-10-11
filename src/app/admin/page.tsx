@@ -34,16 +34,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<any[]>([]);
 
   const { data: session } = useSession();
-  const [localUser, setLocalUser] = useState<any>(null);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("kayzen_user");
-      if (saved) setLocalUser(JSON.parse(saved));
-    } catch (e) {}
-  }, []);
-
-  const userRole = (session?.user as { role?: string })?.role || localUser?.role || "user";
+  const userRole = (session?.user as { role?: string })?.role || "user";
   const isPenulis = userRole === "penulis";
 
   useEffect(() => {
